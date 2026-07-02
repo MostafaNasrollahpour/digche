@@ -16,4 +16,5 @@ public class DishDto
     public double? Rating { get; set; }
     public string? Chef { get; set; }
     public string? Location { get; set; }
+    public string? UserName { get; set; }
 }

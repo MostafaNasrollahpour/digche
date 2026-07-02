@@ -96,7 +96,7 @@ public class Order
         return true;
     }
 
-    // ===== تغییر StartPreparing (فقط از Paid مجاز است) =====
+    // شروع آماده‌سازی سفارش ثبت‌شده
     public bool StartPreparing()
     {
         if (Status != OrderStatus.Registered)

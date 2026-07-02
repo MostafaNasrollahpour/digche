@@ -25,11 +25,13 @@ public class GetDishByIdQueryHandler : IRequestHandler<GetDishByIdQuery, Result<
         // دریافت اطلاعات کاربر
         string? chefCity = null;
         string? chefName = null;
+        string? userName = null;
         var userInfo = await _userServiceClient.GetUserInfoAsync(dish.ChefId, cancellationToken);
         if (userInfo != null)
         {
             chefCity = userInfo.Address;  // شهر
             chefName = userInfo.DisplayName;  // اسم نمایشی
+            userName = userInfo.Username;
             if (string.IsNullOrWhiteSpace(chefName))
             {
                 // اگر DisplayName خالی بود، از FirstName و LastName ترکیب کن
@@ -58,7 +60,8 @@ public class GetDishByIdQueryHandler : IRequestHandler<GetDishByIdQuery, Result<
             Category = dish.Category,
             Rating = avgRating,
             Location = chefCity,
-            Chef = chefName
+            Chef = chefName,
+            UserName = userName
         };
 
         return Result<DishDto>.Success(dto);

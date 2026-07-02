@@ -23,15 +23,12 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
 
     public async Task<Result<bool>> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
-        // 1. دریافت شناسه کاربر جاری
         if (!_userContext.TryGetCurrentUserId(out var userId))
             return Result<bool>.Failure("User ID not found in token.");
 
-        // 2. اعتبارسنجی ورودی
         if (request.Quantity <= 0)
             return Result<bool>.Failure("تعداد باید بیشتر از صفر باشد.");
 
-        // 3. بررسی وجود غذا و موجودی
         var dish = await _dishRepository.GetByIdAsync(request.DishId, cancellationToken);
         if (dish is null)
             return Result<bool>.Failure("غذا یافت نشد.");
@@ -39,7 +36,6 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
         if (!dish.IsAvailable || !dish.HasEnoughStock(request.Quantity))
             return Result<bool>.Failure("غذا موجود نیست یا موجودی کافی نیست.");
 
-        // 4. دریافت سبد خرید کاربر یا ایجاد جدید
         var cart = await _cartRepository.GetByUserIdWithItemsAsync(userId, cancellationToken);
         if (cart is null)
         {
@@ -47,10 +43,15 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Result<
             await _cartRepository.AddAsync(cart, cancellationToken);
         }
 
-        // 5. افزودن آیتم به سبد
+        var existingChefId = cart.Items
+            .Select(item => item.Dish?.ChefId)
+            .FirstOrDefault(id => id.HasValue);
+
+        if (existingChefId.HasValue && existingChefId.Value != dish.ChefId)
+            return Result<bool>.Failure("سبد خرید فقط می‌تواند شامل غذاهای یک آشپز باشد.");
+
         cart.AddItem(request.DishId, request.Quantity);
 
-        // 6. ذخیره تغییرات
         await _cartRepository.UpdateAsync(cart, cancellationToken);
 
         return Result<bool>.Success(true);
