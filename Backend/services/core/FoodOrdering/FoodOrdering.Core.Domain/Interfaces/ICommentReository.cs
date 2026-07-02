@@ -10,5 +10,6 @@ namespace FoodOrdering.Core.Domain.Interfaces
         Task UpdateAsync(Comment comment, CancellationToken cancellation = default);
         Task DeleteAsync(Guid id, CancellationToken cancellation = default);
         Task<int> SaveChangesAsync(CancellationToken cancellation = default);
+        Task<double?> GetAverageRatingByChefIdAsync(Guid chefId, CancellationToken cancellation = default);
     }
 }
