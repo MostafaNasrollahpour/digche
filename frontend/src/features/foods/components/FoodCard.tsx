@@ -10,6 +10,7 @@ import { Star, MapPin } from "lucide-react";
 import FoodCardActions from "./FoodCardActions";
 import type { Food } from "../types/food.types";
 import { formatPrice, toPersianDigits } from "@/shared/utils/persian-number";
+import { getProvinceCityFromAddress } from "@/shared/location/location-text";
 
 interface FoodCardProps {
   item: Food;
@@ -18,6 +19,7 @@ interface FoodCardProps {
   canEditFood?: boolean;
   canAddToCart?: boolean;
   isClickable?: boolean;
+  showChefMeta?: boolean;
 }
 
 export default function FoodCard({
@@ -27,6 +29,7 @@ export default function FoodCard({
   canEditFood,
   canAddToCart,
   isClickable = false,
+  showChefMeta,
 }: FoodCardProps) {
   const router = useRouter();
 
@@ -36,7 +39,16 @@ export default function FoodCard({
   const isScroll = display === "scroll";
   const isCompact = display === "compact";
 
-  const shouldShowChefInfo = variant === "customer";
+  const shouldShowChefMeta = showChefMeta ?? variant === "customer";
+
+  const hasChef = Boolean(String(item.chef ?? "").trim());
+
+  const locationText = String(item.location ?? "").trim();
+  const { province: foodProvince, city: foodCity } =
+    getProvinceCityFromAddress(locationText);
+
+  const foodLocationLabel = foodCity || foodProvince || locationText;
+  const hasLocation = Boolean(foodLocationLabel);
 
   const foodDetailsHref = `/foods/${item.id}`;
 
@@ -109,9 +121,9 @@ export default function FoodCard({
               {toPersianDigits(item.remaining)}
             </p>
 
-            {shouldShowChefInfo && item.location && (
+            {shouldShowChefMeta && hasLocation && (
               <p className="mt-1 flex items-center justify-end gap-1 text-xs text-gray-500">
-                <span className="truncate">{item.location}</span>
+                <span className="truncate">{foodLocationLabel}</span>
                 <MapPin size={13} className="shrink-0 text-orange-400" />
               </p>
             )}
@@ -190,13 +202,13 @@ export default function FoodCard({
         <div className="mb-5 space-y-1 text-sm text-gray-600 sm:mb-6">
           <p className="truncate">{toPersianDigits(item.remaining)}</p>
 
-          {shouldShowChefInfo && item.chef && (
+          {shouldShowChefMeta && hasChef && (
             <p className="truncate">{item.chef}</p>
           )}
 
-          {shouldShowChefInfo && item.location && (
+          {shouldShowChefMeta && hasLocation && (
             <p className="flex items-center justify-end gap-1">
-              <span className="truncate">{item.location}</span>
+              <span className="truncate">{foodLocationLabel}</span>
               <MapPin size={14} className="shrink-0 text-orange-400" />
             </p>
           )}
