@@ -592,17 +592,17 @@ export default function UserSettingsScreen({
                     موقعیت مکانی
                   </span>
 
-                  <div dir="ltr" className="mt-1 flex min-h-10 items-center justify-between gap-3 rounded-xl bg-[#F2CDB5]/55 px-4 text-right text-sm text-gray-800">
+                  <div className="mt-1 flex min-h-10 w-full items-center gap-3 rounded-xl bg-[#F2CDB5]/55 px-4 text-right text-sm text-gray-800">
+                    <span className="min-w-0 flex-1 truncate text-right">
+                      {form.location || "هنوز موقعیتی انتخاب نشده است"}
+                    </span>
+
                     <Link
                       href="/customer/addresses"
                       className="shrink-0 rounded-full bg-[#EFC5A8] px-4 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-[#e9b892]"
                     >
                       مدیریت آدرس
                     </Link>
-
-                    <span className="truncate">
-                      {form.location || "هنوز موقعیتی انتخاب نشده است"}
-                    </span>
                   </div>
 
                   <p className="mt-2 text-right text-xs text-gray-500">

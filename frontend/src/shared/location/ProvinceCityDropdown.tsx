@@ -167,7 +167,7 @@ export default function ProvinceCityDropdown({
 
             {activeProvinceData && (
               <div
-                className="absolute right-full z-[60] mr-1 w-42 rounded-2xl border border-gray-100 bg-white shadow-xl"
+                className="absolute right-full z-[60] mr-1 w-37 rounded-2xl border border-gray-100 bg-white shadow-xl"
                 style={{ top: activeProvinceTop }}
               >
                 <div className="max-h-80 overflow-y-auto py-2">
