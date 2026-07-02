@@ -9,42 +9,97 @@ public class GetChefOrdersQueryHandler : IRequestHandler<GetChefOrdersQuery, Res
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IUserContext _userContext;
+    private readonly IUserServiceClient _userServiceClient;
 
-    public GetChefOrdersQueryHandler(IOrderRepository orderRepository, IUserContext userContext)
+    public GetChefOrdersQueryHandler(
+        IOrderRepository orderRepository,
+        IUserContext userContext,
+        IUserServiceClient userServiceClient)
     {
         _orderRepository = orderRepository;
         _userContext = userContext;
+        _userServiceClient = userServiceClient;
     }
 
     public async Task<Result<IEnumerable<OrderDto>>> Handle(GetChefOrdersQuery request, CancellationToken cancellationToken)
     {
         if (!_userContext.TryGetCurrentUserId(out var chefId))
-            return Result<IEnumerable<OrderDto>>.Failure("User ID not found in token.");
+            return Result<IEnumerable<OrderDto>>.Failure("شناسه کاربر در توکن یافت نشد.");
 
+        // --- دریافت اطلاعات آشپز جاری (برای نام خودش) ---
+        AuthUserDto chefInfo = null;
+        try
+        {
+            chefInfo = await _userServiceClient.GetUserInfoAsync(chefId, cancellationToken);
+        }
+        catch { /* خطا نادیده گرفته می‌شود */ }
+
+        var chefName = chefInfo != null ? GetDisplayName(chefInfo) : "نامشخص";
+
+        // --- دریافت سفارش‌های مربوط به این آشپز ---
         var orders = await _orderRepository.GetByChefIdAsync(chefId, cancellationToken);
         if (orders is null || !orders.Any())
             return Result<IEnumerable<OrderDto>>.Success(Enumerable.Empty<OrderDto>());
 
-        var orderDtos = orders.Select(order => new OrderDto
+        // --- کش اطلاعات مشتریان ---
+        var customerCache = new Dictionary<Guid, AuthUserDto>();
+
+        foreach (var order in orders)
         {
-            Id = order.Id,
-            CustomerId = order.CustomerId,
-            ChefId = order.ChefId,
-            DeliveryAddress = order.DeliveryAddress,
-            DeliveryFee = order.DeliveryFee,
-            EstimatedDeliveryTime = order.EstimatedDeliveryTime,
-            Status = order.Status,
-            TotalPrice = order.TotalPrice,
-            CreatedAt = order.CreatedAt,
-            Items = order.Items.Select(item => new OrderItemDto
+            if (!customerCache.ContainsKey(order.CustomerId))
             {
-                DishId = item.DishId,
-                DishName = item.Dish?.Name ?? "نامشخص",
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice
-            }).ToList()
+                try
+                {
+                    var userInfo = await _userServiceClient.GetUserInfoAsync(order.CustomerId, cancellationToken);
+                    customerCache[order.CustomerId] = userInfo;
+                }
+                catch
+                {
+                    customerCache[order.CustomerId] = null;
+                }
+            }
+        }
+
+        // --- نگاشت به DTO ---
+        var orderDtos = orders.Select(order =>
+        {
+            var customerInfo = customerCache.GetValueOrDefault(order.CustomerId);
+            var customerName = customerInfo != null ? GetDisplayName(customerInfo) : "نامشخص";
+            var customerPhone = customerInfo?.Phone ?? "نامشخص";
+
+            return new OrderDto
+            {
+                Id = order.Id,
+                CustomerId = order.CustomerId,
+                ChefId = order.ChefId,
+                CustomerName = customerName,
+                CustomerPhone = customerPhone,
+                ChefName = chefName,          // ← مقداردهی با نام خود آشپز
+                Status = order.Status,
+                OrderedAt = order.CreatedAt,
+                Items = order.Items.Select(item => new OrderItemDto
+                {
+                    FoodId = item.DishId,
+                    FoodTitle = item.Dish?.Name ?? "نامشخص",
+                    FoodImage = item.Dish?.ImageUrl ?? string.Empty,
+                    Quantity = item.Quantity,
+                    Price = item.UnitPrice,
+                    Unit = "تومان"
+                }).ToList()
+            };
         });
 
         return Result<IEnumerable<OrderDto>>.Success(orderDtos);
+    }
+
+    private static string GetDisplayName(AuthUserDto user)
+    {
+        if (!string.IsNullOrWhiteSpace(user.FirstName) && !string.IsNullOrWhiteSpace(user.LastName))
+            return $"{user.FirstName} {user.LastName}";
+        if (!string.IsNullOrWhiteSpace(user.DisplayName))
+            return user.DisplayName;
+        if (!string.IsNullOrWhiteSpace(user.Username))
+            return user.Username;
+        return "کاربر";
     }
 }
