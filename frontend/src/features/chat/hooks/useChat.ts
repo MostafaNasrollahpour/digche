@@ -136,6 +136,7 @@ export function useChat({
   const bootedStartConversationRef = useRef(false);
   const selectedConversationIdRef = useRef<string | null>(selectedConversationId);
   const socketRef = useRef<WebSocket | null>(null);
+  const connectSocketRef = useRef<(() => void) | null>(null);
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<number | null>(null);
   const intentionalSocketCloseRef = useRef(false);
@@ -615,10 +616,14 @@ export function useChat({
       reconnectAttemptRef.current += 1;
 
       reconnectTimerRef.current = window.setTimeout(() => {
-        connectSocket();
+        connectSocketRef.current?.();
       }, delay);
     };
   }, [accessToken, handleSocketPayload, subscribeToConversation]);
+
+  useEffect(() => {
+    connectSocketRef.current = connectSocket;
+  }, [connectSocket]);
 
   useEffect(() => {
     if (!accessToken || !currentActor) {
@@ -626,7 +631,7 @@ export function useChat({
       intentionalSocketCloseRef.current = true;
       socketRef.current?.close();
       socketRef.current = null;
-      setSocketStatus("idle");
+      window.setTimeout(() => setSocketStatus("idle"), 0);
       return;
     }
 

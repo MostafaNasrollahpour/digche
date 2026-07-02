@@ -8,6 +8,7 @@ import { useOrderStore } from "@/store/order-store";
 import { useChefFoods } from "@/features/chef/hooks/use-chef-foods";
 import { useChefDashboard } from "../hooks/use-chef-dashboard";
 import DashboardStatCard from "./DashboardStatCard";
+import ChefProfileBadge from "../../components/ChefProfileBadge";
 
 function normalizeDigits(value: string) {
   return value
@@ -50,7 +51,7 @@ function isSameMonth(firstDate: Date, secondDate: Date) {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("fa-IR", {
-    useGrouping: false,
+    maximumFractionDigits: 1,
   }).format(value);
 }
 
@@ -139,7 +140,7 @@ export default function ChefDashboardScreen() {
     currentUser.name ||
     currentUser.chefDisplayName ||
     currentUser.username ||
-    "خانم ایکس";
+    "آشپز دیگچه";
 
   const monthlyIncome =
     backendDashboard?.stats.monthlyIncome ?? localDashboardData.monthlyIncome;
@@ -155,13 +156,32 @@ export default function ChefDashboardScreen() {
     localDashboardData.activeFoodsCount;
 
   return (
-    <section dir="rtl" className="relative h-full overflow-hidden">
-      <div className="h-full px-7 py-5 lg:px-8">
-        <div dir="ltr" className="flex items-start justify-between">
-          <div className="flex h-9 w-[112px] items-center justify-end gap-2 rounded-sm bg-[#F2E6DB] px-2 shadow-sm">
+    <section dir="rtl" className="relative h-full overflow-y-auto lg:overflow-hidden">
+      <div className="h-full px-7 py-6 lg:px-9">
+        <div className="flex items-start justify-between gap-5">
+          <div className="text-right">
+            <h1 className="text-[22px] font-extrabold leading-8 text-gray-950">
+              👋 خوش اومدی!
+            </h1>
+
+
+            {isLoading && (
+              <p className="mt-2 text-[10px] font-medium text-gray-400">
+                در حال دریافت اطلاعات داشبورد...
+              </p>
+            )}
+
+          </div>
+
+          <ChefProfileBadge/>
+          {/* <div
+            dir="ltr"
+            className="flex h-9 w-[118px] shrink-0 items-center justify-end gap-2 rounded-[3px] bg-[#F2E6DB] px-2 shadow-sm"
+          >
             <span
               dir="rtl"
               className="truncate text-[10px] font-medium text-gray-900"
+              title={displayName}
             >
               {displayName}
             </span>
@@ -175,33 +195,11 @@ export default function ChefDashboardScreen() {
                 unoptimized={isBase64Avatar}
               />
             </div>
-          </div>
-
-          <div dir="rtl" className="text-right">
-            <h1 className="text-xl font-extrabold text-gray-950">
-              👋 خوش اومدی!
-            </h1>
-
-            <p className="mt-2 text-[11px] font-medium text-[#D16565]">
-              خسته نباشی آشپز عزیز، وضعیت امروزتو و غذاهات رو اینجا ببین
-            </p>
-
-            {isLoading && (
-              <p className="mt-2 text-[10px] font-medium text-gray-400">
-                در حال دریافت اطلاعات داشبورد...
-              </p>
-            )}
-
-            {isError && (
-              <p className="mt-2 text-[10px] font-medium text-gray-400">
-                فعلاً اطلاعات محلی نمایش داده می‌شود.
-              </p>
-            )}
-          </div>
+          </div> */}
         </div>
 
-        <div className="mt-16 flex justify-center">
-          <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+        <div className="mt-14 flex justify-center">
+          <div className="grid w-full max-w-[520px] lg:grid-cols-2 sm:grid-cols-1 gap-y-5 sm:gap-5">
             <DashboardStatCard
               title="درآمد این ماه"
               value={formatNumber(monthlyIncome)}
@@ -212,7 +210,7 @@ export default function ChefDashboardScreen() {
             />
 
             <DashboardStatCard
-              title="سفارش های امروز"
+              title="سفارش‌های امروز"
               value={formatNumber(todayOrdersCount)}
               subtitle="سفارش جدید"
               icon={ClipboardList}
@@ -230,7 +228,7 @@ export default function ChefDashboardScreen() {
             />
 
             <DashboardStatCard
-              title="غذا های فعال"
+              title="غذاهای فعال"
               value={formatNumber(activeFoodsCount)}
               subtitle="غذای فعال در فروش"
               icon={Utensils}

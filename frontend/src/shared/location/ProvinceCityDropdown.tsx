@@ -42,14 +42,18 @@ export default function ProvinceCityDropdown({
   useEffect(() => {
     if (!isOpen) return;
 
-    if (value.province) {
-      setActiveProvince(value.province);
-      setActiveProvinceTop(8);
-      return;
-    }
+    const syncTimer = window.setTimeout(() => {
+      if (value.province) {
+        setActiveProvince(value.province);
+        setActiveProvinceTop(8);
+        return;
+      }
 
-    setActiveProvince(iranLocations[0]?.name ?? "");
-    setActiveProvinceTop(8);
+      setActiveProvince(iranLocations[0]?.name ?? "");
+      setActiveProvinceTop(8);
+    }, 0);
+
+    return () => window.clearTimeout(syncTimer);
   }, [isOpen, value.province]);
 
   useEffect(() => {
@@ -163,7 +167,7 @@ export default function ProvinceCityDropdown({
 
             {activeProvinceData && (
               <div
-                className="absolute right-full z-[60] mr-1 w-42 rounded-2xl border border-gray-100 bg-white shadow-xl"
+                className="absolute right-full z-[60] mr-1 w-37 rounded-2xl border border-gray-100 bg-white shadow-xl"
                 style={{ top: activeProvinceTop }}
               >
                 <div className="max-h-80 overflow-y-auto py-2">

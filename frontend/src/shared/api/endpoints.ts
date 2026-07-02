@@ -41,4 +41,11 @@ export const endpoints = {
     addItem: "/core/Carts/items",
     removeItem: (dishId: number | string) => `/core/Carts/items/${dishId}`,
   },
+
+  orders: {
+  create: "/core/Orders",
+  detail: (id: number | string) => `/core/Orders/${id}`,
+  customer: "/core/Orders/customer",
+  chef: "/core/Orders/chef",
+},
 };

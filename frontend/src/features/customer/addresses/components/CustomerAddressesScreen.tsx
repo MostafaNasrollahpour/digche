@@ -21,6 +21,7 @@ import {
   getAddressTitleFromAddress,
   getProvinceCityFromAddress,
 } from "@/shared/location/location-text";
+import { toPersianDigits } from "@/shared/utils/persian-number";
 
 type CustomerAddressesScreenProps = {
   returnTo?: string;
@@ -166,7 +167,8 @@ export default function CustomerAddressesScreen({
 
   useEffect(() => {
     if (effectiveLockCity) {
-      setFormMode("edit");
+      const syncTimer = window.setTimeout(() => setFormMode("edit"), 0);
+      return () => window.clearTimeout(syncTimer);
     }
   }, [effectiveLockCity]);
 
@@ -293,8 +295,8 @@ export default function CustomerAddressesScreen({
               type="button"
               onClick={handleMainButtonClick}
               disabled={saveAddress.isPending || deleteAddress.isPending}
-              className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#EFC5A8] px-6 text-sm font-bold text-gray-900 transition hover:bg-[#e9b892] disabled:cursor-not-allowed disabled:opacity-60"
-            >
+              className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#EFC5A8] px-6 text-sm font-bold text-gray-900 transition hover:bg-[#e9b892] sm:w-auto"
+>
               {hasCurrentAddress ? <Edit3 size={18} /> : <Plus size={18} />}
 
               {hasCurrentAddress ? "ویرایش آدرس فعلی" : "افزودن آدرس"}
@@ -318,19 +320,19 @@ export default function CustomerAddressesScreen({
               </div>
 
               <h2 className="mt-1 text-sm font-extrabold text-gray-950">
-                {getAddressTitleFromAddress(getAddressFullLine(selectedAddress))}
+                {toPersianDigits(getAddressTitleFromAddress(getAddressFullLine(selectedAddress)))}
               </h2>
 
 
               <p className="mt-1 text-sm leading-7 text-gray-700">
-                {getAddressDisplayLine(getAddressFullLine(selectedAddress))}
+                {toPersianDigits(getAddressDisplayLine(getAddressFullLine(selectedAddress)))}
               </p>
             </div>
           )}
 
           {!selectedAddress && fallbackAddressText && (
             <div className="mt-5 rounded-2xl border border-[#EFC5A8] bg-[#FFF9F4] px-5 py-4 text-right">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs font-bold text-[#D16565]">آدرس فعلی</p>
 
                 <button

@@ -12,23 +12,36 @@ export default function ChefProfileBadge() {
 
   if (!currentUser || currentUser.role !== "chef") return null;
 
-  const avatarSrc = currentUser.avatar || defaultAvatar;
+  const avatarSrc = currentUser.avatar || currentUser.photoUrl || defaultAvatar;
   const isBase64Avatar = avatarSrc.startsWith("data:");
 
+  const displayName =
+    currentUser.chefDisplayName ||
+    currentUser.name ||
+    currentUser.username ||
+    "خانم ایکس";
+
   return (
-    <div className="flex h-24 w-full items-center gap-5 rounded-3xl bg-white px-6 shadow-[0_0_0_2px_rgba(17,24,39,0.08),8px_8px_16px_rgba(0,0,0,0.18)] sm:w-90">
-      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[#F2CDB5]">
+    <div
+      dir="ltr"
+      title={displayName}
+      className="flex h-[44px] w-[112px] shrink-0 items-center gap-2 overflow-hidden rounded-[4px] border border-gray-200 bg-white px-2 shadow-[0_1px_4px_rgba(0,0,0,0.22)]"
+    >
+      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-[#F2CDB5]">
         <Image
           src={avatarSrc}
-          alt={currentUser.chefDisplayName || currentUser.name}
+          alt={displayName}
           fill
           className="object-cover"
           unoptimized={isBase64Avatar}
         />
       </div>
 
-      <p className="truncate text-2xl font-bold text-gray-950">
-        {currentUser.chefDisplayName || currentUser.name}
+      <p
+        dir="rtl"
+        className="min-w-0 flex-1 truncate text-right text-[10px] font-medium leading-4 text-gray-950"
+      >
+        {displayName}
       </p>
     </div>
   );

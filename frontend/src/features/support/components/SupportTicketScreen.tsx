@@ -113,7 +113,9 @@ export default function SupportTicketScreen({ role }: SupportTicketScreenProps) 
   );
 
   useEffect(() => {
-    void loadMyTickets();
+    const initialLoadTimer = window.setTimeout(() => {
+      void loadMyTickets();
+    }, 0);
 
     const intervalId = window.setInterval(() => {
       void loadMyTickets({ silent: true });
@@ -129,6 +131,7 @@ export default function SupportTicketScreen({ role }: SupportTicketScreenProps) 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      window.clearTimeout(initialLoadTimer);
       window.clearInterval(intervalId);
       window.removeEventListener("focus", handleVisibilityChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);

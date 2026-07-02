@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import type { ChefOrder, OrderStatus } from "@/store/order-store";
-import { useOrderStore } from "@/store/order-store";
 import OrderHistoryScreen from "@/shared/orders/history/components/OrderHistoryScreen";
 import {
   formatPersianDate,
@@ -12,6 +11,7 @@ import {
   groupOrdersByDate,
 } from "@/shared/orders/history/utils/order-history-date";
 import ChefOrderHistoryCard from "./ChefOrderHistoryCard";
+import { useChefOrdersHistory } from "../../hooks/use-chef-orders-history";
 
 const statusLabels: Record<OrderStatus, string> = {
   pending: "در انتظار تایید",
@@ -44,48 +44,64 @@ function getSearchableOrderText(order: ChefOrder) {
 
 export default function ChefOrdersHistoryScreen() {
   const currentUser = useAuthStore((state) => state.currentUser);
-  const orders = useOrderStore((state) => state.orders);
-  const seedFakeOrders = useOrderStore((state) => state.seedFakeOrders);
+  const isChef = currentUser?.role === "chef";
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const ordersQuery = useChefOrdersHistory({
+    enabled: Boolean(isChef),
+  });
+
+  const orders = ordersQuery.data ?? [];
   const today = formatPersianDate(new Date());
 
-  useEffect(() => {
-    if (!currentUser || currentUser.role !== "chef") return;
-
-    const hasOrdersForCurrentChef = orders.some(
-      (order) => Number(order.chefId) === Number(currentUser.id)
-    );
-
-    if (hasOrdersForCurrentChef) return;
-
-    seedFakeOrders(Number(currentUser.id));
-  }, [currentUser, orders, seedFakeOrders]);
-
   const groupedOrders = useMemo(() => {
-    if (!currentUser || currentUser.role !== "chef") return [];
+    if (!isChef) return [];
 
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    const chefOrders = orders
-      .filter((order) => Number(order.chefId) === Number(currentUser.id))
-      .filter((order) => {
-        if (!normalizedSearch) return true;
+    const chefOrders = orders.filter((order) => {
+      if (!normalizedSearch) return true;
 
-        return getSearchableOrderText(order).includes(normalizedSearch);
-      });
+      return getSearchableOrderText(order).includes(normalizedSearch);
+    });
 
     return groupOrdersByDate(chefOrders);
-  }, [orders, currentUser, searchTerm]);
+  }, [orders, isChef, searchTerm]);
 
-  if (!currentUser || currentUser.role !== "chef") {
+  if (!isChef) {
     return (
       <section className="rounded-3xl border border-orange-100 bg-white p-10 text-center shadow-sm">
         <h1 className="text-xl font-bold text-gray-800">دسترسی غیرمجاز</h1>
 
         <p className="mt-2 text-sm text-gray-500">
           فقط آشپزها می‌توانند تاریخچه سفارش‌ها را ببینند.
+        </p>
+      </section>
+    );
+  }
+
+  if (ordersQuery.isLoading) {
+    return (
+      <section className="rounded-3xl border border-orange-100 bg-white p-10 text-center shadow-sm">
+        <h1 className="text-xl font-bold text-gray-800">
+          در حال دریافت سفارش‌ها...
+        </h1>
+
+        <p className="mt-2 text-sm text-gray-500">لطفاً چند لحظه صبر کنید.</p>
+      </section>
+    );
+  }
+
+  if (ordersQuery.isError) {
+    return (
+      <section className="rounded-3xl border border-red-100 bg-white p-10 text-center shadow-sm">
+        <h1 className="text-xl font-bold text-gray-800">
+          دریافت سفارش‌ها ناموفق بود
+        </h1>
+
+        <p className="mt-2 text-sm text-gray-500">
+          دوباره تلاش کنید یا وضعیت اتصال به بک‌اند را بررسی کنید.
         </p>
       </section>
     );
@@ -103,7 +119,7 @@ export default function ChefOrdersHistoryScreen() {
       searchPlaceholder="جست و جو در سفارش ها..."
       emptyTitle="سفارشی برای نمایش وجود ندارد"
       emptyDescription="هنوز سفارشی ثبت نشده یا نتیجه‌ای برای جست‌وجوی شما پیدا نشد."
-      gridClassName="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 "
+      gridClassName="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
     />
   );
 }

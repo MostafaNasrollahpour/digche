@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, ReceiptText } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
+import { toPersianDigits } from "@/shared/utils/persian-number";
 
 const toEnglishDigits = (value: string) => {
   return value
@@ -104,7 +105,7 @@ export default function CartSummary() {
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-500">تعداد محصولات</span>
             <span className="font-bold text-gray-800">
-              {summary.totalQuantity} عدد
+              {toPersianDigits(summary.totalQuantity)} عدد
             </span>
           </div>
 

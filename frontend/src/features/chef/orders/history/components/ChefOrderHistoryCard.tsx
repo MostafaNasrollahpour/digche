@@ -4,6 +4,7 @@
 
 import Image from "next/image";
 import { ChefOrder, OrderStatus } from "@/store/order-store";
+import { toPersianDigits } from "@/shared/utils/persian-number";
 
 type ChefOrderHistoryCardProps = {
   order: ChefOrder;
@@ -75,7 +76,7 @@ export default function ChefOrderHistoryCard({
 
         <div className="flex items-center justify-between gap-2 text-xs">
           <span className="font-bold text-gray-700">
-            تعداد: {order.quantity}
+            تعداد: {toPersianDigits(order.quantity)}
           </span>
 
           <span className="font-medium text-gray-500">{orderTime}</span>

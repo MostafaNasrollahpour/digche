@@ -48,8 +48,8 @@ export default function CustomerAddressCard({
           </button>
         </div>
 
-        <div className="min-w-0 flex-1 text-right bg-amber-500">
-          <div className="flex items-center justify-end gap-2">
+        <div className="min-w-0 flex-1 text-right">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h3 className="truncate text-sm font-extrabold text-gray-950">
               {address.title}
             </h3>
@@ -69,7 +69,7 @@ export default function CustomerAddressCard({
             type="button"
             onClick={() => onSelect(address)}
             disabled={isSelecting}
-            className="h-9 rounded-full bg-[#EFC5A8] px-5 text-xs font-bold text-gray-900 transition hover:bg-[#e9b892] disabled:cursor-not-allowed disabled:opacity-60"
+            className="h-9 w-full rounded-full bg-[#EFC5A8] px-5 text-xs font-bold ... sm:w-auto"
           >
             {isSelecting ? "در حال انتخاب..." : "انتخاب به عنوان آدرس فعلی"}
           </button>

@@ -4,8 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FoodOrdering.Core.Application.Commands.CreateOrder;
-using FoodOrdering.Core.Application.Commands.ApproveOrder;   // اضافه
-using FoodOrdering.Core.Application.Commands.PayOrder;        // اضافه
+using FoodOrdering.Core.Application.Commands.UpdateOrderStatus;
 
 namespace FoodOrdering.Core.API.Controllers;
 
@@ -30,7 +29,8 @@ public class OrdersController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { message = result.ErrorMessage });
 
-        return CreatedAtAction(nameof(GetOrder), new { id = result.Data }, result.Data);
+        var order = result.Data!;
+        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
     }
 
     [HttpGet("{id:guid}")]
@@ -70,30 +70,16 @@ public class OrdersController : ControllerBase
         return Ok(result);
     }
 
-    // ===== اکشن جدید برای تأیید سفارش توسط آشپز =====
-    [HttpPut("{id:guid}/approve")]
+    [HttpPut("{id:guid}/status")]
     [Authorize(Roles = "chef")]
-    public async Task<IActionResult> ApproveOrder(Guid id)
+    public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
-        var command = new ApproveOrderCommand(id);
+        var command = new UpdateOrderStatusCommand(id, dto.Status, dto.EstimatedDeliveryTime);
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
             return BadRequest(new { message = result.ErrorMessage });
 
-        return Ok(new { message = "Order approved successfully." });
-    }
-
-    // ===== اکشن جدید برای پرداخت توسط مشتری =====
-    [HttpPost("{id:guid}/pay")]
-    public async Task<IActionResult> PayOrder(Guid id)
-    {
-        var command = new PayOrderCommand(id);
-        var result = await _mediator.Send(command);
-
-        if (!result.IsSuccess)
-            return BadRequest(new { message = result.ErrorMessage });
-
-        return Ok(new { message = "Payment successful. Money transferred to chef." });
+        return Ok(new { message = "Order status updated successfully." });
     }
 }

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import ProvinceCityDropdown from "@/shared/location/ProvinceCityDropdown";
 import { buildFullAddress } from "@/shared/location/location-text";
 import type { CustomerAddressPayload } from "../types/customer-address.types";
+import { toPersianDigits } from "@/shared/utils/persian-number";
 
 type AddressFormInitialValues = {
   title?: string;
@@ -43,10 +44,14 @@ export default function AddressForm({
   const [details, setDetails] = useState(initialValues?.details || "");
 
   useEffect(() => {
-    setTitle(normalizeTitle(initialValues?.title));
-    setProvince(initialValues?.province || "");
-    setCity(initialValues?.city || "");
-    setDetails(initialValues?.details || "");
+    const syncTimer = window.setTimeout(() => {
+      setTitle(normalizeTitle(initialValues?.title));
+      setProvince(initialValues?.province || "");
+      setCity(initialValues?.city || "");
+      setDetails(initialValues?.details || "");
+    }, 0);
+
+    return () => window.clearTimeout(syncTimer);
   }, [
     initialValues?.title,
     initialValues?.province,
@@ -86,8 +91,7 @@ export default function AddressForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-orange-100 bg-[#FFF9F4] p-5 text-right"
-    >
+      className="rounded-3xl border border-orange-100 bg-[#FFF9F4] p-4 text-right sm:p-5"    >
       <div className="grid gap-4 md:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-sm font-bold text-gray-800">
@@ -100,7 +104,7 @@ export default function AddressForm({
             </div>
           ) : (
             <input
-              value={title}
+              value={toPersianDigits(title)}
               onChange={(event) => setTitle(event.target.value)}
               disabled={isSubmitting}
               placeholder="خانه، محل کار..."
@@ -146,7 +150,7 @@ export default function AddressForm({
         </span>
 
         <textarea
-          value={details}
+          value={toPersianDigits(details)}
           onChange={(event) => setDetails(event.target.value)}
           disabled={isSubmitting}
           rows={4}

@@ -14,6 +14,7 @@ export function createPublicAuthRoutes(controller, publicAuthMiddleware) {
   router.post("/logout", controller.logout);
 
   router.get("/me", publicAuthMiddleware, controller.me);
+  router.get("/users/search", publicAuthMiddleware, controller.searchUsers);
 
   router.patch("/me/first-name", publicAuthMiddleware, controller.updateFirstName);
   router.patch("/me/last-name", publicAuthMiddleware, controller.updateLastName);

@@ -10,6 +10,7 @@ import { RefreshAdminSession } from "./application/use-cases/RefreshAdminSession
 import { LogoutSession } from "./application/use-cases/LogoutSession.js";
 import { UpdatePublicProfileField } from "./application/use-cases/UpdatePublicProfileField.js";
 import { UpdateAdminProfileField } from "./application/use-cases/UpdateAdminProfileField.js";
+import { SearchPublicUsersByUsername } from "./application/use-cases/SearchPublicUsersByUsername.js";
 import { AddAdminUser } from "./application/use-cases/AddAdminUser.js";
 import { RequestAdminUserPhoneOtp } from "./application/use-cases/RequestAdminUserPhoneOtp.js";
 import { VerifyAdminUserPhoneOtp } from "./application/use-cases/VerifyAdminUserPhoneOtp.js";
@@ -224,6 +225,10 @@ export function createContainer() {
     allowedPhotoUrlOrigins: env.profile.allowedPhotoUrlOrigins
   });
 
+  const searchPublicUsersByUsername = new SearchPublicUsersByUsername({
+    userRepository
+  });
+
   const addAdminUser = new AddAdminUser({
     adminUserRepository
   });
@@ -302,6 +307,7 @@ export function createContainer() {
     refreshPublicSession,
     logoutSession,
     updatePublicProfileField,
+    searchPublicUsersByUsername,
     requestPublicPhoneChangeOtp,
     verifyPublicPhoneChangeOtp
   });

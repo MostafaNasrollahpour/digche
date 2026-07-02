@@ -9,6 +9,7 @@ import SearchInput from "@/shared/components/SearchInput";
 import FoodCard from "@/features/foods/components/FoodCard";
 import { useAuthStore } from "@/store/auth-store";
 import { useChefFoods } from "../../hooks/use-chef-foods";
+import { toPersianDigits } from "@/shared/utils/persian-number";
 
 export default function ChefFoodsScreen() {
   const currentUser = useAuthStore((state) => state.currentUser);
@@ -53,8 +54,8 @@ export default function ChefFoodsScreen() {
   }
 
   return (
-    <section dir="rtl" className="relative h-full overflow-hidden">
-      <div className="flex h-full flex-col px-5 py-6 sm:px-7 lg:px-8">
+    <section dir="rtl" className="relative h-full min-h-0 overflow-hidden">
+      <div className="flex h-full min-h-0 flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
         <div className="shrink-0">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="text-right">
@@ -62,7 +63,7 @@ export default function ChefFoodsScreen() {
                 غذاهای من
               </h1>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm leading-6 text-gray-500">
                 فقط غذاهایی نمایش داده می‌شوند که متعلق به حساب شما هستند.
               </p>
             </div>
@@ -72,12 +73,12 @@ export default function ChefFoodsScreen() {
                 value={searchTerm}
                 onChange={setSearchTerm}
                 placeholder="جست و جو در غذاها..."
-                className="sm:w-80"
+                className="w-full sm:w-80"
               />
 
               <Link
                 href="/chef/foods/new"
-                className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#EFC5A8] px-6 text-sm font-bold text-gray-900 transition hover:bg-[#e9b892]"
+                className="flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#EFC5A8] px-6 text-sm font-bold text-gray-900 transition hover:bg-[#e9b892] sm:w-auto"
               >
                 <Plus size={19} />
                 افزودن غذا
@@ -85,9 +86,7 @@ export default function ChefFoodsScreen() {
             </div>
           </div>
 
-                    <div className="w-[94%] mx-auto h-px mt-8 bg-[#D9D9D9]"></div>
-
-
+          <div className="mx-auto mt-8 h-px w-full max-w-[94%] bg-[#D9D9D9]" />
 
           <div className="mt-8 text-right">
             <h2 className="text-xl font-extrabold text-gray-900">
@@ -95,43 +94,42 @@ export default function ChefFoodsScreen() {
             </h2>
 
             <p className="mt-1 text-sm text-gray-500">
-              تعداد غذاهای شما: {chefFoods.length}
+              تعداد غذاهای شما: {toPersianDigits(chefFoods.length)}
             </p>
           </div>
         </div>
 
-        <div className="mt-6 min-h-0 flex-1 overflow-y-auto pb-2 pl-2">
-          {chefFoods.length === 0 ? (
-            <div className="rounded-3xl border border-orange-100 bg-[#FFF9F4] p-10 text-center">
-              <h3 className="text-xl font-bold text-gray-800">
-                غذایی برای نمایش وجود ندارد
-              </h3>
+<div className="mt-6 min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4 pl-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+  {chefFoods.length === 0 ? (
+    <div className="rounded-3xl border border-orange-100 bg-[#FFF9F4] p-6 text-center sm:p-10">
+      <h3 className="text-xl font-bold text-gray-800">
+        غذایی برای نمایش وجود ندارد
+      </h3>
 
-              <p className="mt-2 text-sm text-gray-500">
-                هنوز غذایی با حساب شما ثبت نشده یا نتیجه‌ای برای جست‌وجوی شما
-                پیدا نشد.
-              </p>
+      <p className="mt-2 text-sm leading-6 text-gray-500">
+        هنوز غذایی با حساب شما ثبت نشده یا نتیجه‌ای برای جست‌وجوی شما پیدا نشد.
+      </p>
 
-              <Link
-                href="/chef/foods/new"
-                className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#D48B8B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#c97b7b]"
-              >
-                <Plus size={18} />
-                افزودن اولین غذا
-              </Link>
-            </div>
-          ) : (
-            <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
-              {chefFoods.map((food) => (
-                <FoodCard
-                  key={food.id}
-                  item={food}
-                  variant="chef"
-                  display="grid"
-                />
-              ))}
-            </div>
-          )}
+      <Link
+        href="/chef/foods/new"
+        className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#D48B8B] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#c97b7b]"
+      >
+        <Plus size={18} />
+        افزودن اولین غذا
+      </Link>
+    </div>
+  ) : (
+<div className="grid w-full grid-cols-[repeat(auto-fit,minmax(286px,300px))] justify-center gap-x-2 gap-y-5 pb-8 sm:gap-x-3 md:gap-x-4 lg:gap-x-5 xl:gap-x-6 2xl:gap-x-7">     {chefFoods.map((food) => (
+        <FoodCard
+          key={food.id}
+          item={food}
+          variant="chef"
+          display="scroll"
+        />
+      ))}
+    </div>
+  )}
+
         </div>
       </div>
     </section>

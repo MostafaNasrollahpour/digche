@@ -2,6 +2,7 @@
 
 "use client";
 
+import { toPersianDigits } from "@/shared/utils/persian-number";
 import { ChefOrder, OrderStatus, useOrderStore } from "@/store/order-store";
 
 type ChefOrderCardProps = {
@@ -120,7 +121,7 @@ export default function ChefOrderCard({ order }: ChefOrderCardProps) {
 
           <div className="flex items-center justify-between rounded-xl bg-white/60 px-3 py-2">
             <span className="text-gray-500">تعداد</span>
-            <span className="font-bold text-gray-950">{order.quantity}</span>
+            <span className="font-bold text-gray-950">{toPersianDigits(order.quantity)}</span>
           </div>
 
           <div className="rounded-xl bg-white/60 px-3 py-2">

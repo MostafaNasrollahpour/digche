@@ -40,6 +40,7 @@ public class TestAuthController : ControllerBase
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             new Claim(ClaimTypes.Role, role),
+            new Claim("selectedRole", role),
             new Claim("phoneNumber", "09121234567")
         };
 

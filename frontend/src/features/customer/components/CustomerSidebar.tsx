@@ -89,7 +89,7 @@ export default function CustomerSidebar() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed right-4 top-4 z-40 flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-gray-800 shadow-sm md:hidden"
+        className="fixed right-4 top-4 z-40 flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-gray-800 shadow-sm lg:hidden"
         aria-label="باز کردن منو"
       >
         <Menu size={24} />
@@ -99,13 +99,13 @@ export default function CustomerSidebar() {
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="fixed inset-0 z-40 bg-black/35 md:hidden"
+          className="fixed inset-0 z-40 bg-black/35 lg:hidden"
           aria-label="بستن منو"
         />
       )}
 
       <aside
-        className={`fixed bottom-0 right-0 top-0 z-50 flex w-[82%] max-w-[340px] flex-col overflow-hidden rounded-l-[2rem] bg-white px-5 py-5 shadow-xl transition-transform duration-300 md:bottom-6 md:right-6 md:top-6 md:w-[318px] md:max-w-none md:translate-x-0 md:rounded-[1.6rem] md:shadow-sm ${
+        className={`fixed bottom-0 right-0 top-0 z-50 flex w-[82%] max-w-[340px] flex-col overflow-hidden rounded-l-[2rem] bg-white px-5 py-5 shadow-xl transition-transform duration-300 lg:bottom-6 lg:right-6 lg:top-6 lg:w-[318px] lg:max-w-none lg:translate-x-0 lg:rounded-[1.6rem] lg:shadow-sm ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

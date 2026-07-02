@@ -35,8 +35,9 @@ cp services/ticket/.env.production.example services/ticket/.env
 Important:
 
 - `JWT_SECRET` must be identical in auth, chat, media, and ticket.
-- `core-service` reads the auth service `.env`, so auth `JWT_SECRET` must remain the shared token secret.
+- `JWT_SECRET` in root `.env` must also match the same shared token secret because `core-service` validates auth-issued access tokens directly.
 - `AUTH_INTERNAL_API_KEY` must be identical in auth, chat, media, and ticket.
+- `AUTH_INTERNAL_API_KEY` in root `.env` must also match the same shared internal key because `core-service` calls auth internal APIs directly.
 - `AUTH_DB_PASSWORD`, `CHAT_DB_PASSWORD`, and `TICKET_DB_PASSWORD` in root `.env`
   must match the matching service `DB_PASSWORD` values.
 - `CORE_DB_PASSWORD` in root `.env` is required for the core Postgres database.
@@ -49,8 +50,8 @@ Important:
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-The gateway is bound to `127.0.0.1:8080` in production. Put host nginx/SSL in
-front of it and proxy `api.your-domain` to `http://127.0.0.1:8080`.
+The gateway is bound to `127.0.0.1:8081` in production. Put host nginx/SSL in
+front of it and proxy `api.your-domain` to `http://127.0.0.1:8081`.
 
 ## Backup
 

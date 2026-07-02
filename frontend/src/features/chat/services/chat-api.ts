@@ -98,6 +98,57 @@ async function requestJson<ResponseBody>(
   return responseBody as ResponseBody;
 }
 
+async function requestAuthJson<ResponseBody>(
+  path: string,
+  options: RequestJsonOptions = {}
+): Promise<ResponseBody> {
+  const headers = new Headers(options.headers);
+
+  headers.set("Accept", "application/json");
+
+  if (options.body !== undefined) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (options.accessToken) {
+    headers.set("Authorization", `Bearer ${options.accessToken}`);
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method ?? "GET",
+      cache: "no-store",
+      headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    });
+  } catch {
+    throw new ChatApiError(
+      "ارتباط با سرویس احراز هویت برقرار نشد. وضعیت بک‌اند یا آدرس API را بررسی کنید.",
+      0,
+      "NETWORK_ERROR"
+    );
+  }
+
+  const responseBody = await readJsonResponse(response);
+
+  if (!response.ok) {
+    const errorBody = responseBody as ErrorResponseBody | null;
+    const code = errorBody?.error?.code || errorBody?.code;
+    const message = errorBody?.error?.message || errorBody?.message;
+
+    throw new ChatApiError(
+      message || getFallbackHttpErrorMessage(response.status),
+      response.status,
+      code,
+      message
+    );
+  }
+
+  return responseBody as ResponseBody;
+}
+
 async function readJsonResponse(response: Response) {
   const text = await response.text();
 
@@ -252,7 +303,7 @@ export async function searchChatUsersByUsername(
     return [];
   }
 
-  const response = await requestJson<unknown>(
+  const response = await requestAuthJson<unknown>(
     `/auth/users/search${buildQuery({ username: normalizedUsername, limit: 8 })}`,
     {
       method: "GET",

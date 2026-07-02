@@ -4,8 +4,8 @@ import { foodCategories } from "../constants/food-categories";
 
 export default function CategorySection() {
   return (
-    <section className="max-w-7xl mx-auto px-6 py-12" dir="rtl">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10">
+<section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12" dir="rtl">
+  <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-5">
         {foodCategories.map((category) => (
           <Link
             key={category.id}
@@ -21,8 +21,8 @@ export default function CategorySection() {
               />
             </div>
 
-            <h3 className="mt-4 text-gray-800 font-medium text-lg md:text-xl transition-colors group-hover:text-orange-700">
-              {category.title}
+            <h3 className="mt-3 text-base font-medium text-gray-800 transition-colors group-hover:text-orange-700 md:text-xl"> 
+                  {category.title}
             </h3>
           </Link>
         ))}

@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { Star, MapPin } from "lucide-react";
 import FoodCardActions from "./FoodCardActions";
 import type { Food } from "../types/food.types";
+import { formatPrice, toPersianDigits } from "@/shared/utils/persian-number";
+import { getProvinceCityFromAddress } from "@/shared/location/location-text";
 
 interface FoodCardProps {
   item: Food;
@@ -17,6 +19,7 @@ interface FoodCardProps {
   canEditFood?: boolean;
   canAddToCart?: boolean;
   isClickable?: boolean;
+  showChefMeta?: boolean;
 }
 
 export default function FoodCard({
@@ -26,9 +29,8 @@ export default function FoodCard({
   canEditFood,
   canAddToCart,
   isClickable = false,
+  showChefMeta,
 }: FoodCardProps) {
-  console.log("Food image:", item.image);
-
   const router = useRouter();
 
   const resolvedCanEditFood = canEditFood ?? variant === "chef";
@@ -37,15 +39,28 @@ export default function FoodCard({
   const isScroll = display === "scroll";
   const isCompact = display === "compact";
 
+  const shouldShowChefMeta = showChefMeta ?? variant === "customer";
+
+  const hasChef = Boolean(String(item.chef ?? "").trim());
+
+  const locationText = String(item.location ?? "").trim();
+  const { province: foodProvince, city: foodCity } =
+    getProvinceCityFromAddress(locationText);
+
+  const foodLocationLabel = foodCity || foodProvince || locationText;
+  const hasLocation = Boolean(foodLocationLabel);
+
+  const foodDetailsHref = `/foods/${item.id}`;
+
   const cardClass = isScroll
-    ? "min-w-[260px] sm:min-w-[300px] md:min-w-[320px]"
-    : "w-full";
+    ? "w-[286px] min-w-[286px] max-w-[300px] snap-start sm:w-[300px] sm:min-w-[300px]"
+    : "w-full min-w-0";
 
   const imageClass = isCompact
     ? "relative aspect-square w-28 shrink-0 overflow-hidden sm:w-32"
     : isScroll
-      ? "relative h-[230px] w-full sm:h-[248px]"
-      : "relative aspect-[4/3] w-full";
+      ? "relative h-[218px] w-full overflow-hidden sm:h-[226px]"
+      : "relative aspect-[4/3] w-full overflow-hidden";
 
   const clickableClasses = isClickable
     ? "cursor-pointer hover:-translate-y-0.5"
@@ -54,7 +69,7 @@ export default function FoodCard({
   const goToFoodDetails = () => {
     if (!isClickable) return;
 
-    router.push(`/foods/${item.id}`);
+    router.push(foodDetailsHref);
   };
 
   const stopCardClick = (event: MouseEvent<HTMLElement>) => {
@@ -69,7 +84,7 @@ export default function FoodCard({
         className={`flex w-full gap-3 overflow-hidden rounded-3xl border border-gray-100 bg-white p-2 shadow-sm transition hover:shadow-md ${clickableClasses}`}
       >
         <Link
-          href={`/foods/${item.id}`}
+          href={foodDetailsHref}
           onClick={isClickable ? stopCardClick : undefined}
           className={imageClass}
         >
@@ -85,7 +100,7 @@ export default function FoodCard({
           <div>
             <div className="flex items-start justify-between gap-2">
               <Link
-                href={`/foods/${item.id}`}
+                href={foodDetailsHref}
                 onClick={isClickable ? stopCardClick : undefined}
                 className="min-w-0"
               >
@@ -96,20 +111,22 @@ export default function FoodCard({
 
               <div className="flex shrink-0 items-center gap-1 text-yellow-500">
                 <span className="text-xs font-bold text-gray-700">
-                  {item.rating}
+                  {toPersianDigits(item.rating)}
                 </span>
                 <Star size={13} fill="currentColor" />
               </div>
             </div>
 
             <p className="mt-1 truncate text-xs text-gray-500">
-              {item.remaining}
+              {toPersianDigits(item.remaining)}
             </p>
 
-            <p className="mt-1 flex items-center justify-end gap-1 text-xs text-gray-500">
-              {item.location}
-              <MapPin size={13} className="text-orange-400" />
-            </p>
+            {shouldShowChefMeta && hasLocation && (
+              <p className="mt-1 flex items-center justify-end gap-1 text-xs text-gray-500">
+                <span className="truncate">{foodLocationLabel}</span>
+                <MapPin size={13} className="shrink-0 text-orange-400" />
+              </p>
+            )}
           </div>
 
           <div
@@ -117,7 +134,7 @@ export default function FoodCard({
             className="mt-2 flex items-center justify-between gap-2 border-t border-gray-200 pt-2"
           >
             <span className="truncate text-sm font-bold text-gray-900">
-              {item.price}
+              {formatPrice(item.price)}
               {item.unit && (
                 <span className="mr-1 text-xs font-normal text-gray-500">
                   {item.unit}
@@ -141,10 +158,10 @@ export default function FoodCard({
     <article
       dir="rtl"
       onClick={goToFoodDetails}
-      className={`${cardClass} bg- snap-start overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md ${clickableClasses}`}
+      className={`${cardClass} flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md ${clickableClasses}`}
     >
       <Link
-        href={`/foods/${item.id}`}
+        href={foodDetailsHref}
         onClick={isClickable ? stopCardClick : undefined}
         className="block"
       >
@@ -162,12 +179,12 @@ export default function FoodCard({
         </div>
       </Link>
 
-      <div className="p-4 text-right sm:p-5">
+      <div className="flex flex-1 flex-col p-4 text-right sm:p-5">
         <div className="mb-2 flex items-start justify-between gap-3">
           <Link
-            href={`/foods/${item.id}`}
+            href={foodDetailsHref}
             onClick={isClickable ? stopCardClick : undefined}
-            className="min-w-0"
+            className="min-w-0 flex-1"
           >
             <h3 className="truncate text-lg font-bold text-gray-800 sm:text-xl">
               {item.title}
@@ -176,25 +193,30 @@ export default function FoodCard({
 
           <div className="flex shrink-0 items-center gap-1 text-yellow-500">
             <span className="text-sm font-bold text-gray-700">
-              {item.rating}
+              {toPersianDigits(item.rating)}
             </span>
             <Star size={14} fill="currentColor" />
           </div>
         </div>
 
         <div className="mb-5 space-y-1 text-sm text-gray-600 sm:mb-6">
-          <p className="truncate">{item.remaining}</p>
-          <p className="truncate">{item.chef}</p>
+          <p className="truncate">{toPersianDigits(item.remaining)}</p>
 
-          <p className="flex items-center justify-end gap-1">
-            <span className="truncate">{item.location}</span>
-            <MapPin size={14} className="shrink-0 text-orange-400" />
-          </p>
+          {shouldShowChefMeta && hasChef && (
+            <p className="truncate">{item.chef}</p>
+          )}
+
+          {shouldShowChefMeta && hasLocation && (
+            <p className="flex items-center justify-end gap-1">
+              <span className="truncate">{foodLocationLabel}</span>
+              <MapPin size={14} className="shrink-0 text-orange-400" />
+            </p>
+          )}
         </div>
 
         <div
           onClick={stopCardClick}
-          className="flex mt-10 flex-col-reverse gap-3 border-t border-gray-200 pt-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between"
+          className="mt-auto flex flex-col-reverse gap-3 border-t border-gray-200 pt-4 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between"
         >
           <FoodCardActions
             food={item}
@@ -202,11 +224,16 @@ export default function FoodCard({
             canAddToCart={resolvedCanAddToCart}
           />
 
-          <span dir="rtl" className="text-left text-lg font-bold text-gray-900 min-[420px]:text-right">
-                        {item.price}
+          <span
+            dir="rtl"
+            className="text-left text-lg font-bold text-gray-900 min-[420px]:text-right"
+          >
+            {formatPrice(item.price)}
 
             {item.unit && (
-              <span className="ml-1 text-sm font-normal">{" "}{item.unit}</span>
+              <span className="mr-1 text-sm font-normal text-gray-500">
+                {item.unit}
+              </span>
             )}
           </span>
         </div>

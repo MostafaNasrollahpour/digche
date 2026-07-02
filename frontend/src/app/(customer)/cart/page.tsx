@@ -11,6 +11,7 @@ import { useCart } from "@/features/cart/hooks/use-cart";
 import { useAddCartItem } from "@/features/cart/hooks/use-add-cart-item";
 import { useRemoveCartItem } from "@/features/cart/hooks/use-remove-cart-item";
 import { useSetCartItemQuantity } from "@/features/cart/hooks/use-set-cart-item-quantity";
+import { formatPrice, toPersianDigits } from "@/shared/utils/persian-number";
 
 export default function CartPage() {
   const currentUser = useAuthStore((state) => state.currentUser);
@@ -169,7 +170,7 @@ export default function CartPage() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-6">
           <p className="mt-1 mr-6 text-sm text-gray-500">
-            {items.length} غذا در سبد خرید شماست
+            {toPersianDigits(items.length)} غذا در سبد خرید شماست
           </p>
         </div>
 
@@ -228,7 +229,7 @@ export default function CartPage() {
                     </button>
 
                     <span className="min-w-6 text-center text-xs font-bold text-gray-800 sm:min-w-8 sm:text-sm">
-                      {item.quantity}
+                      {toPersianDigits(item.quantity)}
                     </span>
 
                     <button
@@ -243,19 +244,20 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <div className="flex min-w-18 shrink-0 flex-col items-end gap-4 self-stretch border-r border-orange-100 pr-3 sm:min-w-32 sm:gap-5 sm:pr-4">
+                <div dir="rtl" className="flex min-w-18 shrink-0 flex-col items-end gap-4 self-stretch border-r border-orange-100 pr-3 sm:min-w-32 sm:gap-5 sm:pr-4">
                   <div className="text-right">
                     <p className="text-[11px] text-gray-400 sm:text-xs">
                       قیمت
                     </p>
 
                     <p className="text-sm font-bold text-gray-900 sm:text-lg">
+                        {formatPrice(item.price)}
+
                       {item.unit && (
                         <span className="ml-1 text-xs font-normal text-gray-500 sm:text-sm">
-                          {item.unit}
+                          {" "}{item.unit}
                         </span>
                       )}
-                      {item.price}
                     </p>
                   </div>
 

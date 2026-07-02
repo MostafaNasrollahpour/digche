@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +91,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            RoleClaimType = "selectedRole",
+            NameClaimType = ClaimTypes.NameIdentifier,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSecret))
         };
@@ -102,7 +105,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>(client =>
 {
     // استفاده از آدرس مستقیم سرویس auth (نه gateway)
-    client.BaseAddress = new Uri(builder.Configuration["AuthService:BaseUrl"] ?? "http://auth-service:3001");
+    client.BaseAddress = new Uri(builder.Configuration["AuthService:BaseUrl"] ?? "http://auth-service:3001/");
     client.Timeout = TimeSpan.FromSeconds(10);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 

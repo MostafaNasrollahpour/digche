@@ -18,3 +18,5 @@ services:
   core-service:
     environment:
       ConnectionStrings__DefaultConnection: Host=core-db;Database=core_db;Username=core_user;Password=${CORE_DB_PASSWORD:?CORE_DB_PASSWORD is required}
+      Jwt__Secret: ${JWT_SECRET:?JWT_SECRET is required}
+      AuthService__ApiKey: ${AUTH_INTERNAL_API_KEY:?AUTH_INTERNAL_API_KEY is required}

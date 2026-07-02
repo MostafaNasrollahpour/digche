@@ -6,6 +6,7 @@ export class PublicAuthController {
     refreshPublicSession,
     logoutSession,
     updatePublicProfileField,
+    searchPublicUsersByUsername,
     requestPublicPhoneChangeOtp,
     verifyPublicPhoneChangeOtp
   }) {
@@ -15,6 +16,7 @@ export class PublicAuthController {
     this.refreshPublicSession = refreshPublicSession;
     this.logoutSession = logoutSession;
     this.updatePublicProfileField = updatePublicProfileField;
+    this.searchPublicUsersByUsername = searchPublicUsersByUsername;
     this.requestPublicPhoneChangeOtp = requestPublicPhoneChangeOtp;
     this.verifyPublicPhoneChangeOtp = verifyPublicPhoneChangeOtp;
   }
@@ -162,6 +164,20 @@ export class PublicAuthController {
         selectedRole: req.auth.selectedRole,
         field: "username",
         value: req.body.username
+      });
+
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  searchUsers = async (req, res, next) => {
+    try {
+      const result = await this.searchPublicUsersByUsername.execute({
+        username: req.query.username || req.query.q,
+        requesterUserId: req.auth.userId,
+        limit: req.query.limit
       });
 
       res.json(result);

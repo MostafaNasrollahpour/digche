@@ -10,7 +10,7 @@ export default function FormField({
   return (
     <label className="block">
       <span className="mb-2 block text-right text-sm font-bold text-gray-900">
-        {label}
+        {(label)}
       </span>
 
       {children}

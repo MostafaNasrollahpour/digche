@@ -5,6 +5,11 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 import type { FoodComment } from "../types/food-comment.types";
 import { useCreateFoodComment } from "../hooks/use-create-food-comment";
+import {
+  formatPersianDate,
+  formatPersianTime,
+  getValidDate,
+} from "@/shared//orders/history/utils/order-history-date";
 
 interface FoodCommentsProps {
   foodId: number | string;
@@ -34,12 +39,27 @@ function getSafeAvatarSrc(src?: string | null) {
   return `/images/${value}`;
 }
 
-  function getSafeCommentUserName(comment: FoodComment) {
-    const username = comment.username?.trim();
-    const userName = comment.userName?.trim();
+function getSafeCommentUserName(comment: FoodComment) {
+  const username = comment.username?.trim();
+  const userName = comment.userName?.trim();
 
-    return username || userName || "کاربر دیگچه";
+  return username || userName || "کاربر دیگچه";
+}
+
+function formatCommentDateTime(value?: string) {
+  const date = getValidDate(value);
+
+  if (!date) return "";
+
+  const persianDate = formatPersianDate(date);
+  const persianTime = formatPersianTime(value);
+
+  if (!persianTime) {
+    return persianDate;
   }
+
+  return `${persianDate}، ساعت ${persianTime}`;
+}
 
 function RatingStars({ rating = 0 }: { rating?: number }) {
   return (
@@ -146,6 +166,7 @@ export default function FoodComments({
     <section dir="rtl" className="space-y-5">
       <div className="mb-2">
         <h2 className="text-xl font-bold text-gray-900">نظر کاربران</h2>
+
         <p className="mt-1 text-sm text-gray-500">
           تجربه بقیه افراد از این غذا
         </p>
@@ -162,11 +183,11 @@ export default function FoodComments({
                 امتیاز شما
               </label>
 
-                  <RatingInput
-                      value={rating}
-                      onChange={setRating}
-                      disabled={createComment.isPending}
-                  />
+              <RatingInput
+                value={rating}
+                onChange={setRating}
+                disabled={createComment.isPending}
+              />
             </div>
 
             <div>
@@ -220,6 +241,7 @@ export default function FoodComments({
           {comments.map((comment) => {
             const avatarSrc = getSafeAvatarSrc(comment.userAvatar);
             const displayUserName = getSafeCommentUserName(comment);
+            const commentDateTime = formatCommentDateTime(comment.createdAt);
 
             return (
               <article
@@ -248,9 +270,11 @@ export default function FoodComments({
                     </div>
                   </div>
 
-                  <span className="pt-2 text-xs text-gray-500 md:text-sm">
-                    {comment.createdAt ?? ""}
-                  </span>
+                  {commentDateTime && (
+                    <span className="pt-2 text-xs text-gray-500 md:text-sm">
+                      {commentDateTime}
+                    </span>
+                  )}
                 </div>
 
                 <div className="my-5 border-t border-gray-300" />

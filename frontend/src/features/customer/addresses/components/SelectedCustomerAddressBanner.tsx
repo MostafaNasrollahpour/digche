@@ -24,8 +24,7 @@ export default function SelectedCustomerAddressBanner() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/customer/addresses"
-          className="shrink-0 rounded-full bg-[#EFC5A8] px-5 py-2 text-xs font-bold text-gray-900 transition hover:bg-[#e9b892]"
-        >
+          className="w-full shrink-0 rounded-full bg-[#EFC5A8] px-5 py-2 text-center text-xs font-bold text-gray-900 transition hover:bg-[#e9b892] sm:w-auto"        >
           تغییر آدرس
         </Link>
 

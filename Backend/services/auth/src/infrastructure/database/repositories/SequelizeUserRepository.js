@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+
 import { User } from "../../../domain/entities/User.js";
 import { UserModel } from "../models/UserModel.js";
 import { UserRoleModel } from "../models/UserRoleModel.js";
@@ -54,6 +56,46 @@ export class SequelizeUserRepository {
     }
 
     return this.toDomain(user);
+  }
+
+  async searchByUsername({ username, excludeUserId = null, limit = 8 }) {
+    const where = {
+      username: {
+        [Op.iLike]: `%${username}%`
+      },
+      firstName: {
+        [Op.and]: [
+          { [Op.not]: null },
+          { [Op.ne]: "" }
+        ]
+      },
+      lastName: {
+        [Op.and]: [
+          { [Op.not]: null },
+          { [Op.ne]: "" }
+        ]
+      }
+    };
+
+    if (excludeUserId) {
+      where.id = {
+        [Op.ne]: excludeUserId
+      };
+    }
+
+    const users = await UserModel.findAll({
+      where,
+      include: [
+        {
+          model: UserRoleModel,
+          as: "roles"
+        }
+      ],
+      order: [["username", "ASC"]],
+      limit
+    });
+
+    return users.map((user) => this.toDomain(user));
   }
 
   async updateProfileField(userId, field, value) {

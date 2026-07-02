@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { OrderHistoryStatus } from "@/shared/orders/history/types/order-history.types";
 import { formatPersianTime } from "@/shared/orders/history/utils/order-history-date";
 import type { CustomerOrderHistoryItem } from "../types/customer-order-history.types";
+import { toPersianDigits } from "@/shared/utils/persian-number";
 
 type CustomerOrderHistoryCardProps = {
   order: CustomerOrderHistoryItem;
@@ -73,7 +74,7 @@ export default function CustomerOrderHistoryCard({
 
         <div className="flex items-center justify-between gap-2 text-xs">
           <span className="font-bold text-gray-700">
-            تعداد: {order.quantity}
+            تعداد: {toPersianDigits(order.quantity)}
           </span>
 
           <span className="font-medium text-gray-500">{orderTime}</span>

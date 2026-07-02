@@ -21,7 +21,7 @@ export default function HomeHeader() {
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <Image
-              className="h-18 w-20 object-cover"
+              className="h-14 w-16 object-cover sm:h-18 sm:w-20"
               src="/icons/Logo.svg"
               alt="لوگو دیگچه"
               width={250}

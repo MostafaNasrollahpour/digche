@@ -89,7 +89,7 @@ export default function OrderHistoryScreen<
               </p>
             </div>
           ) : (
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-2 pl-2">
+            <div className="min-h-0 flex-1 pt-7 space-y-4 overflow-y-auto pb-2 pl-2">
               {groups.map((group) => (
                 <OrderHistoryGroup
                   key={group.key}

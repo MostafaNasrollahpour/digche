@@ -29,7 +29,9 @@ export function useAdminMessages() {
 
       try {
         const response = await getAdminSupportTickets();
-        const mappedMessages = (response.tickets ?? []).map(mapTicketToMessage);
+        const mappedMessages = (response.tickets ?? []).map((ticket) =>
+          mapTicketToMessage(ticket)
+        );
 
         setMessages(mappedMessages);
         setLoadError("");
@@ -57,7 +59,9 @@ export function useAdminMessages() {
   );
 
   useEffect(() => {
-    void loadMessages();
+    const initialLoadTimer = window.setTimeout(() => {
+      void loadMessages();
+    }, 0);
 
     const intervalId = window.setInterval(() => {
       void loadMessages({ silent: true });
@@ -73,6 +77,7 @@ export function useAdminMessages() {
     document.addEventListener("visibilitychange", handleRefresh);
 
     return () => {
+      window.clearTimeout(initialLoadTimer);
       window.clearInterval(intervalId);
       window.removeEventListener("focus", handleRefresh);
       document.removeEventListener("visibilitychange", handleRefresh);

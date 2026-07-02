@@ -1,37 +1,17 @@
-// src/features/chef/orders/components/ChefOrdersScreen.tsx
-
 "use client";
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useAuthStore } from "@/store/auth-store";
-import { useOrderStore } from "@/store/order-store";
 import SearchInput from "@/shared/components/SearchInput";
 import ChefOrderCard from "./ChefOrderCard";
-
-function isValidDate(value: string | Date) {
-  const date = new Date(value);
-  return !Number.isNaN(date.getTime());
-}
-
-function formatPersianDate(value: string | Date) {
-  if (!isValidDate(value)) return "";
-
-  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(value));
-}
-
-function formatPersianTime(value: string | Date) {
-  if (!isValidDate(value)) return "";
-
-  return new Intl.DateTimeFormat("fa-IR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
+import { useChefOrders } from "../hooks/use-chef-orders";
+import {
+  formatPersianDate,
+  formatPersianTime,
+  getValidDate,
+  isToday,
+} from "@/shared/orders/history/utils/order-history-date";
 
 function formatOrderDateTime(value?: string) {
   if (!value) return "";
@@ -48,19 +28,28 @@ function formatOrderDateTime(value?: string) {
 
 export default function ChefOrdersScreen() {
   const currentUser = useAuthStore((state) => state.currentUser);
-  const orders = useOrderStore((state) => state.orders);
+  const isChef = currentUser?.role === "chef";
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const ordersQuery = useChefOrders({
+    enabled: Boolean(isChef),
+  });
+
+  const orders = ordersQuery.data ?? [];
   const today = formatPersianDate(new Date());
 
   const chefOrders = useMemo(() => {
-    if (!currentUser || currentUser.role !== "chef") return [];
+    if (!isChef) return [];
 
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return orders
-      .filter((order) => Number(order.chefId) === Number(currentUser.id))
+      .filter((order) => {
+        const orderDate = getValidDate(order.orderedAt);
+
+        return orderDate ? isToday(orderDate) : false;
+      })
       .filter((order) => {
         if (!normalizedSearch) return true;
 
@@ -72,9 +61,9 @@ export default function ChefOrdersScreen() {
           orderDateTime.includes(normalizedSearch)
         );
       });
-  }, [orders, currentUser, searchTerm]);
+  }, [orders, isChef, searchTerm]);
 
-  if (!currentUser || currentUser.role !== "chef") {
+  if (!isChef) {
     return (
       <section className="flex h-full items-center justify-center p-6 text-center">
         <div>
@@ -121,7 +110,9 @@ export default function ChefOrdersScreen() {
                 </div>
               </div>
 
-              <p className="mt-2 text-sm text-gray-500">{today}</p>
+              <p dir="rtl" className="mt-2 text-sm text-gray-500">
+                {today}
+              </p>
             </div>
           </div>
 
@@ -143,14 +134,35 @@ export default function ChefOrdersScreen() {
             <p className="text-center text-xl font-bold text-gray-950">تعداد</p>
           </div>
 
-          {chefOrders.length === 0 ? (
+          {ordersQuery.isLoading ? (
+            <div className="rounded-3xl border border-orange-100 bg-[#FFF9F4] p-10 text-center">
+              <h2 className="text-xl font-bold text-gray-800">
+                در حال دریافت سفارش‌ها...
+              </h2>
+
+              <p className="mt-2 text-sm text-gray-500">
+                لطفاً چند لحظه صبر کنید.
+              </p>
+            </div>
+          ) : ordersQuery.isError ? (
+            <div className="rounded-3xl border border-red-100 bg-white p-10 text-center">
+              <h2 className="text-xl font-bold text-gray-800">
+                دریافت سفارش‌ها ناموفق بود
+              </h2>
+
+              <p className="mt-2 text-sm text-gray-500">
+                دوباره تلاش کنید یا وضعیت اتصال به بک‌اند را بررسی کنید.
+              </p>
+            </div>
+          ) : chefOrders.length === 0 ? (
             <div className="rounded-3xl border border-orange-100 bg-[#FFF9F4] p-10 text-center">
               <h2 className="text-xl font-bold text-gray-800">
                 سفارشی برای نمایش وجود ندارد
               </h2>
 
               <p className="mt-2 text-sm text-gray-500">
-                هنوز سفارشی ثبت نشده یا نتیجه‌ای برای جست‌وجوی شما پیدا نشد.
+                هنوز سفارشی برای امروز ثبت نشده یا نتیجه‌ای برای جست‌وجوی شما
+                پیدا نشد.
               </p>
             </div>
           ) : (

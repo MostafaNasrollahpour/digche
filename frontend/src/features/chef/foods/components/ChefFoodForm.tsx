@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { Upload } from "lucide-react";
 import FormField from "./FormField";
+import { toPersianDigits } from "@/shared/utils/persian-number";
 
 export type ChefFoodFormValues = {
   title: string;
@@ -57,8 +58,20 @@ export default function ChefFoodForm({
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   useEffect(() => {
-    setForm(initialValues);
-    setSelectedImageFile(null);
+    const syncTimer = window.setTimeout(() => {
+      setForm({
+        title: initialValues.title,
+        category: initialValues.category,
+        remaining: initialValues.remaining,
+        price: initialValues.price,
+        ingredients: initialValues.ingredients,
+        description: initialValues.description,
+        image: initialValues.image,
+      });
+      setSelectedImageFile(null);
+    }, 0);
+
+    return () => window.clearTimeout(syncTimer);
   }, [
     initialValues.title,
     initialValues.category,
@@ -207,9 +220,9 @@ export default function ChefFoodForm({
               <FormField label="مقدار">
                 <input
                   name="remaining"
-                  value={form.remaining}
+                  value={toPersianDigits(form.remaining)}
                   onChange={handleChange}
-                  placeholder="مثلا: 2"
+                  placeholder="مثلا: ۲"
                   inputMode="numeric"
                   className={inputClassName}
                 />
@@ -218,9 +231,9 @@ export default function ChefFoodForm({
               <FormField label="قیمت (تومان)">
                 <input
                   name="price"
-                  value={form.price}
+                  value={toPersianDigits(form.price)}
                   onChange={handleChange}
-                  placeholder="مثلا: 350000"
+                  placeholder="مثلا: ۳۵۰,۰۰۰"
                   inputMode="numeric"
                   className={inputClassName}
                 />
@@ -230,7 +243,7 @@ export default function ChefFoodForm({
                 <FormField label="توضیحات اضافه">
                   <textarea
                     name="description"
-                    value={form.description}
+                    value={toPersianDigits(form.description)}
                     onChange={handleChange}
                     rows={3}
                     placeholder="درباره غذا اگر نکته‌ای هست که مشتری باید بداند بنویسید"

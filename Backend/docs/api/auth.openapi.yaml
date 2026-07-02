@@ -334,6 +334,49 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /auth/users/search:
+    get:
+      tags:
+        - Public Auth
+      summary: Search public users by username for chat
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: username
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 50
+          description: Partial username to search for
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 8
+      responses:
+        "200":
+          description: Matching users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PublicUserSearchResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
   /auth/me/photo-url:
     patch:
       tags:
@@ -1485,6 +1528,43 @@ components:
           properties:
             status:
               $ref: "#/components/schemas/ChefAccountStatus"
+
+    PublicUserSearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+          nullable: true
+          example: "ali_ahmadi"
+        firstName:
+          type: string
+          nullable: true
+          example: "Ali"
+        lastName:
+          type: string
+          nullable: true
+          example: "Ahmadi"
+        displayName:
+          type: string
+          nullable: true
+          example: "Ali Ahmadi"
+        phone:
+          type: string
+          example: "+989121234567"
+        photoUrl:
+          type: string
+          nullable: true
+          example: "https://cdn.example.com/users/user-1/profile.jpg"
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+              - client
+              - chef
 
     InternalUserProfile:
       type: object

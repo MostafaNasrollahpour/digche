@@ -47,8 +47,8 @@ export default function FoodScroll() {
   }, [foods, selectedLocation]);
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-12 rtl" dir="rtl">
-      <div className="mb-6 flex items-center justify-between">
+    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12" dir="rtl">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-bold text-gray-800">اطراف شما</h2>
 
         <Link
@@ -79,7 +79,7 @@ export default function FoodScroll() {
           </p>
         </div>
       ) : (
-        <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-6 scrollbar-hide">
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6 sm:gap-6">
           {filteredFoods.map((item) => (
             <FoodCardClient key={item.id} item={item} display="scroll" />
           ))}

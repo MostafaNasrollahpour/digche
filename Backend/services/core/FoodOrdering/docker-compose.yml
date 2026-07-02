@@ -30,7 +30,7 @@ services:
       - Jwt__Secret=YourSuperSecretKeyForJwtWithAtLeast32Characters123
       - Jwt__Issuer=FoodOrderingCoreAPI
       - Jwt__Audience=FoodOrderingClients
-      - AuthService__BaseUrl=http://localhost:8081/auth/
+      - AuthService__BaseUrl=${AUTH_SERVICE_BASE_URL:-http://auth-service:3001/}
       - AuthService__ApiKey=${AUTH_INTERNAL_API_KEY:-change_me_internal_auth_key}
     ports:
       - "5000:80"
@@ -46,4 +46,5 @@ volumes:
 
 networks:
   food-network:
+    name: ${CORE_DOCKER_NETWORK:-digche_food_network}
     driver: bridge

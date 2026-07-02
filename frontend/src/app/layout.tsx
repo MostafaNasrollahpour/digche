@@ -18,7 +18,7 @@ export default function RootLayout({
       <body>
         <AuthSessionProvider>
             <ReactQueryProvider>
-          <div className="h-screen w-screen gap-15 overflow-x-hidden">
+          <div className="min-h-dvh w-full overflow-x-clip">
             {children}
           </div>
           </ReactQueryProvider>
