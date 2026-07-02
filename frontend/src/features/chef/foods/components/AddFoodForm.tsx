@@ -78,7 +78,7 @@ export default function AddFoodForm() {
         image: uploadedImageUrl,
         ingredients: values.ingredients.trim(),
         description: values.description.trim(),
-        location: "مشهد",
+        location: chefLocation,
         isAvailable: true,
       });
 

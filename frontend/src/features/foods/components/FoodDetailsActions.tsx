@@ -27,12 +27,22 @@ interface FoodDetailsActionsProps {
 }
 
 function getChefChatHref(food: Food) {
-  const params = new URLSearchParams({
-    chefId: String(food.chefId),
-    chefName: food.chef || "آشپز دیگچه",
-    foodId: String(food.id),
-    foodTitle: food.title,
-  });
+  const params = new URLSearchParams();
+
+  const chefId = String(food.chefId ?? "").trim();
+  const chefUsername = String(food.chefUsername ?? "").trim();
+
+  if (chefId) {
+    params.set("chefId", chefId);
+  }
+
+  if (chefUsername) {
+    params.set("username", chefUsername);
+  }
+
+  params.set("chefName", food.chef || "آشپز دیگچه");
+  params.set("foodId", String(food.id));
+  params.set("foodTitle", food.title);
 
   return `/customer/messages?${params.toString()}`;
 }
@@ -50,7 +60,7 @@ export default function FoodDetailsActions({
   const removeFromCart = useCartStore((state) => state.removeFromCart);
 
   const cartItem = useCartStore((state) =>
-    state.items.find((cartItem) => String(cartItem.id) === String(food.id))
+    state.items.find((cartItem) => String(cartItem.id) === String(food.id)),
   );
 
   const quantity = cartItem?.quantity ?? 0;
@@ -69,7 +79,9 @@ export default function FoodDetailsActions({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const chefChatHref = getChefChatHref(food);
-  const canMessageChef = canAddToCart && Boolean(food.chefId);
+  const canMessageChef =
+    canAddToCart &&
+    Boolean(String(food.chefId ?? "").trim() || food.chefUsername?.trim());
 
   const handleAddToCart = async () => {
     if (isCartPending) return;
@@ -85,7 +97,7 @@ export default function FoodDetailsActions({
       alert(
         error instanceof Error
           ? error.message
-          : "افزودن به سبد خرید ناموفق بود."
+          : "افزودن به سبد خرید ناموفق بود.",
       );
     }
   };
@@ -102,7 +114,7 @@ export default function FoodDetailsActions({
       increaseQuantity(food.id);
     } catch (error) {
       alert(
-        error instanceof Error ? error.message : "افزایش تعداد ناموفق بود."
+        error instanceof Error ? error.message : "افزایش تعداد ناموفق بود.",
       );
     }
   };
@@ -126,9 +138,7 @@ export default function FoodDetailsActions({
 
       decreaseQuantity(food.id);
     } catch (error) {
-      alert(
-        error instanceof Error ? error.message : "کاهش تعداد ناموفق بود."
-      );
+      alert(error instanceof Error ? error.message : "کاهش تعداد ناموفق بود.");
     }
   };
 
@@ -148,8 +158,8 @@ export default function FoodDetailsActions({
   if (canEditFood) {
     return (
       <>
-        <div dir="ltr"  className="grid w-full grid-cols-[1fr_1.35fr] gap-3">
-                  <button
+        <div dir="ltr" className="grid w-full grid-cols-[1fr_1.35fr] gap-3">
+          <button
             type="button"
             onClick={() => setIsDeleteDialogOpen(true)}
             disabled={deleteFood.isPending}
@@ -157,7 +167,7 @@ export default function FoodDetailsActions({
           >
             <Trash2 size={18} />
             حذف غذا
-          </button>  
+          </button>
           <Link
             href={`/chef/foods/${food.id}/edit`}
             className="flex h-14 flex-1 items-center justify-center gap-3 rounded-full bg-[#111322] px-5 text-sm font-bold text-white transition hover:bg-gray-800 sm:text-base"
@@ -165,8 +175,6 @@ export default function FoodDetailsActions({
             <Edit3 size={21} />
             ویرایش اطلاعات غذا
           </Link>
-
-
         </div>
 
         {isDeleteDialogOpen && (

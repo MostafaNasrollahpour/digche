@@ -8,6 +8,7 @@ type CustomerMessagesPageProps = {
     chefName?: string | string[];
     foodId?: string | string[];
     foodTitle?: string | string[];
+    username?: string | string[];
   };
 };
 
@@ -25,6 +26,7 @@ export default function CustomerMessagesPage({
   const chefId = getSearchParamValue(searchParams?.chefId).trim();
   const chefName = getSearchParamValue(searchParams?.chefName).trim();
   const foodTitle = getSearchParamValue(searchParams?.foodTitle).trim();
+  const username = getSearchParamValue(searchParams?.username).trim();
 
   const startConversation: StartChatConversationInput | null = chefId
     ? {
@@ -42,6 +44,7 @@ export default function CustomerMessagesPage({
         <ChatFeaturePage
           mode="customer"
           startConversation={startConversation}
+          initialParticipantUsername={username}
         />
       </main>
     </AuthRouteGuard>

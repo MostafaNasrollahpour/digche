@@ -27,6 +27,7 @@ type ChatBoxProps = {
   mode: "customer" | "chef";
   initialConversationId?: string | null;
   startConversation?: StartChatConversationInput | null;
+  initialParticipantUsername?: string | null;
 };
 
 function formatTime(value?: string | null) {
@@ -38,26 +39,32 @@ function formatTime(value?: string | null) {
   }).format(new Date(value));
 }
 
-function getCurrentActorId(currentUser: ReturnType<typeof useAuthStore.getState>["currentUser"]) {
+function getCurrentActorId(
+  currentUser: ReturnType<typeof useAuthStore.getState>["currentUser"],
+) {
   if (!currentUser) return "";
   return currentUser.publicId || String(currentUser.id);
 }
 
 function getOtherParticipant(
   conversation: ChatConversation,
-  currentActorId: string
+  currentActorId: string,
 ): ChatParticipant | null {
   return (
     conversation.participants.find(
       (participant) =>
-        participant.participantId !== currentActorId || participant.participantType !== "user"
+        participant.participantId !== currentActorId ||
+        participant.participantType !== "user",
     ) ||
     conversation.participants[0] ||
     null
   );
 }
 
-function getConversationTitle(conversation: ChatConversation, currentActorId: string) {
+function getConversationTitle(
+  conversation: ChatConversation,
+  currentActorId: string,
+) {
   const participant = getOtherParticipant(conversation, currentActorId);
 
   return (
@@ -68,33 +75,48 @@ function getConversationTitle(conversation: ChatConversation, currentActorId: st
   );
 }
 
-function getConversationAvatar(conversation: ChatConversation, currentActorId: string) {
+function getConversationAvatar(
+  conversation: ChatConversation,
+  currentActorId: string,
+) {
   const participant = getOtherParticipant(conversation, currentActorId);
   return participant?.photoUrl || "/images/chef.webp";
 }
 
 function getPreview(message?: ChatMessage | null) {
   if (!message?.body) return "هنوز پیامی ثبت نشده است.";
-  return message.body.length > 34 ? `${message.body.slice(0, 34)}...` : message.body;
+  return message.body.length > 34
+    ? `${message.body.slice(0, 34)}...`
+    : message.body;
 }
 
-
 function getSearchUserDisplayName(user: ChatSearchUser) {
-  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
-  return user.displayName || fullName || user.username || user.phone || "کاربر دیگچه";
+  const fullName = [user.firstName, user.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  return (
+    user.displayName || fullName || user.username || user.phone || "کاربر دیگچه"
+  );
 }
 
 function MessageStatus({ message }: { message: ChatUiMessage }) {
   if (message.deliveryStatus === "sending") {
-    return <Clock3 size={12} className="text-gray-400" aria-label="در حال ارسال" />;
+    return (
+      <Clock3 size={12} className="text-gray-400" aria-label="در حال ارسال" />
+    );
   }
 
   if (message.deliveryStatus === "failed") {
-    return <RotateCcw size={12} className="text-red-500" aria-label="ارسال نشد" />;
+    return (
+      <RotateCcw size={12} className="text-red-500" aria-label="ارسال نشد" />
+    );
   }
 
   if (message.deliveryStatus === "seen") {
-    return <CheckCheck size={14} className="text-green-600" aria-label="دیده شد" />;
+    return (
+      <CheckCheck size={14} className="text-green-600" aria-label="دیده شد" />
+    );
   }
 
   if (message.deliveryStatus === "sent") {
@@ -108,6 +130,7 @@ export function ChatBox({
   mode,
   initialConversationId = null,
   startConversation = null,
+  initialParticipantUsername = null,
 }: ChatBoxProps) {
   const currentUser = useAuthStore((state) => state.currentUser);
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -118,11 +141,13 @@ export function ChatBox({
   const [isStartingConversation, setIsStartingConversation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const searchDebounceTimer = useRef<number | null>(null);
+  const bootedInitialParticipantSearchRef = useRef("");
 
   const currentActorId = getCurrentActorId(currentUser);
   const currentActor = useMemo(
-    () => (currentActorId ? { id: currentActorId, type: "user" as const } : null),
-    [currentActorId]
+    () =>
+      currentActorId ? { id: currentActorId, type: "user" as const } : null,
+    [currentActorId],
   );
 
   const {
@@ -143,12 +168,12 @@ export function ChatBox({
     sendTyping,
     sendMessage,
     isMine,
-      searchedUsers,
+    searchedUsers,
     isSearchingUsers,
     userSearchError,
     searchUsersByUsername,
     clearUserSearch,
-} = useChat({
+  } = useChat({
     accessToken,
     currentActor,
     initialConversationId,
@@ -179,7 +204,9 @@ export function ChatBox({
       ? "text-green-600"
       : "text-gray-500";
 
-  const selectedStatusLabel = typingText ? "در حال نوشتن..." : selectedPresenceLabel;
+  const selectedStatusLabel = typingText
+    ? "در حال نوشتن..."
+    : selectedPresenceLabel;
 
   function scrollToBottom(behavior: ScrollBehavior = "smooth") {
     messagesEndRef.current?.scrollIntoView({
@@ -212,7 +239,34 @@ export function ChatBox({
     if (isNearTop && selectedConversationId && !isOlderMessagesLoading) {
       void loadOlderMessages();
     }
-  }, [isNearTop, isOlderMessagesLoading, loadOlderMessages, selectedConversationId]);
+  }, [
+    isNearTop,
+    isOlderMessagesLoading,
+    loadOlderMessages,
+    selectedConversationId,
+  ]);
+
+  useEffect(() => {
+    const username = String(initialParticipantUsername ?? "").trim();
+
+    if (!username || bootedInitialParticipantSearchRef.current === username) {
+      return;
+    }
+
+    bootedInitialParticipantSearchRef.current = username;
+    setParticipantSearchText(username);
+
+    if (searchDebounceTimer.current) {
+      window.clearTimeout(searchDebounceTimer.current);
+    }
+
+    if (username.length < 2) {
+      clearUserSearch();
+      return;
+    }
+
+    void searchUsersByUsername(username);
+  }, [clearUserSearch, initialParticipantUsername, searchUsersByUsername]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -224,7 +278,6 @@ export function ChatBox({
       window.setTimeout(() => scrollToBottom("smooth"), 0);
     }
   }
-
 
   function handleSearchUserChange(value: string) {
     setParticipantSearchText(value);
@@ -273,8 +326,13 @@ export function ChatBox({
         className="flex min-h-[520px] w-full max-w-5xl items-center justify-center rounded-xl border border-orange-100 bg-white p-8 text-center shadow-sm"
       >
         <div>
-          <MessageSquareText className="mx-auto mb-4 text-[#E8793E]" size={42} />
-          <h2 className="text-lg font-bold text-gray-900">برای دیدن پیام‌ها وارد شوید.</h2>
+          <MessageSquareText
+            className="mx-auto mb-4 text-[#E8793E]"
+            size={42}
+          />
+          <h2 className="text-lg font-bold text-gray-900">
+            برای دیدن پیام‌ها وارد شوید.
+          </h2>
         </div>
       </section>
     );
@@ -285,9 +343,11 @@ export function ChatBox({
       dir="ltr"
       className="grid h-[calc(100vh-8rem)] min-h-[620px] w-full max-w-5xl overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md md:grid-cols-[285px_minmax(0,1fr)]"
     >
-      <aside dir="rtl" className="flex min-h-0 flex-col border-r border-gray-200 bg-white">
+      <aside
+        dir="rtl"
+        className="flex min-h-0 flex-col border-r border-gray-200 bg-white"
+      >
         <div className="flex h-[76px] items-center justify-between border-b border-gray-200 px-5">
-
           <h2 className="text-2xl font-bold text-gray-950">گفتگو ها</h2>
         </div>
 
@@ -314,7 +374,10 @@ export function ChatBox({
             </p>
           ) : null}
 
-          {participantSearchText.trim().length >= 2 && !isSearchingUsers && searchedUsers.length === 0 && !userSearchError ? (
+          {participantSearchText.trim().length >= 2 &&
+          !isSearchingUsers &&
+          searchedUsers.length === 0 &&
+          !userSearchError ? (
             <p className="mt-2 text-xs text-gray-500">کاربری پیدا نشد.</p>
           ) : null}
 
@@ -341,7 +404,10 @@ export function ChatBox({
                       <span className="block truncate text-xs font-bold text-gray-950">
                         {title}
                       </span>
-                      <span dir="ltr" className="mt-0.5 block truncate text-left text-[11px] text-gray-500">
+                      <span
+                        dir="ltr"
+                        className="mt-0.5 block truncate text-left text-[11px] text-gray-500"
+                      >
                         @{user.username || user.id}
                       </span>
                     </span>
@@ -439,7 +505,9 @@ export function ChatBox({
 
           <div className="flex items-center gap-4">
             <div dir="rtl" className="text-right">
-              <h1 className="text-xl font-bold text-gray-950">{selectedTitle}</h1>
+              <h1 className="text-xl font-bold text-gray-950">
+                {selectedTitle}
+              </h1>
               <p className={`mt-1 text-xs font-bold ${selectedPresenceClass}`}>
                 {selectedStatusLabel}
               </p>
@@ -467,7 +535,10 @@ export function ChatBox({
           {!selectedConversation ? (
             <div className="flex h-full items-center justify-center text-center">
               <div className="rounded-2xl bg-white/85 px-6 py-5 shadow-sm">
-                <MessageSquareText className="mx-auto mb-3 text-[#E8793E]" size={34} />
+                <MessageSquareText
+                  className="mx-auto mb-3 text-[#E8793E]"
+                  size={34}
+                />
                 <p className="text-sm font-bold text-gray-700">
                   یک گفتگو را انتخاب کنید.
                 </p>
@@ -481,7 +552,9 @@ export function ChatBox({
 
               return (
                 <div
-                  key={message.id || message.clientMessageId || message.createdAt}
+                  key={
+                    message.id || message.clientMessageId || message.createdAt
+                  }
                   className={mine ? "flex justify-end" : "flex justify-start"}
                 >
                   <div className="flex max-w-[74%] items-end gap-2">
@@ -498,8 +571,12 @@ export function ChatBox({
                         className={[
                           "rounded-lg border border-gray-900 px-5 py-3 text-sm leading-7 text-gray-950 shadow-sm",
                           mine ? "bg-[#F1F7A1]" : "bg-white",
-                          message.deliveryStatus === "failed" ? "border-red-400" : "",
-                          message.deliveryStatus === "sending" ? "opacity-75" : "",
+                          message.deliveryStatus === "failed"
+                            ? "border-red-400"
+                            : "",
+                          message.deliveryStatus === "sending"
+                            ? "opacity-75"
+                            : "",
                         ].join(" ")}
                       >
                         {message.body}
@@ -508,7 +585,9 @@ export function ChatBox({
                       <div
                         className={[
                           "mt-1 flex items-center gap-2 text-[11px] text-gray-500",
-                          mine ? "justify-end text-left" : "justify-start text-right",
+                          mine
+                            ? "justify-end text-left"
+                            : "justify-start text-right",
                         ].join(" ")}
                       >
                         <span>{formatTime(message.createdAt)}</span>
@@ -523,7 +602,9 @@ export function ChatBox({
 
           <div ref={messagesEndRef} />
 
-          {selectedConversation && selectedMessages.length === 0 && !isMessagesLoading ? (
+          {selectedConversation &&
+          selectedMessages.length === 0 &&
+          !isMessagesLoading ? (
             <div className="flex h-full items-center justify-center text-center">
               <div className="rounded-2xl bg-white/85 px-6 py-5 text-sm text-gray-500 shadow-sm">
                 هنوز پیامی در این گفتگو ثبت نشده است.
@@ -553,10 +634,15 @@ export function ChatBox({
             </p>
           ) : null}
 
-          <div dir="ltr" className="flex items-center gap-3 rounded-2xl border border-gray-400 bg-white px-3 py-2">
+          <div
+            dir="ltr"
+            className="flex items-center gap-3 rounded-2xl border border-gray-400 bg-white px-3 py-2"
+          >
             <button
               type="submit"
-              disabled={!selectedConversation || isSending || !messageText.trim()}
+              disabled={
+                !selectedConversation || isSending || !messageText.trim()
+              }
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FF6B1A] text-white transition hover:bg-[#e65f16] disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="ارسال پیام"
             >

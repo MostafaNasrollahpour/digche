@@ -5,12 +5,14 @@ type ChatFeaturePageProps = {
   mode: "customer" | "chef";
   initialConversationId?: string | null;
   startConversation?: StartChatConversationInput | null;
+  initialParticipantUsername?: string | null;
 };
 
 export default function ChatFeaturePage({
   mode,
   initialConversationId = null,
   startConversation = null,
+  initialParticipantUsername = null,
 }: ChatFeaturePageProps) {
   return (
     <section
@@ -21,6 +23,7 @@ export default function ChatFeaturePage({
         mode={mode}
         initialConversationId={initialConversationId}
         startConversation={startConversation}
+        initialParticipantUsername={initialParticipantUsername}
       />
     </section>
   );

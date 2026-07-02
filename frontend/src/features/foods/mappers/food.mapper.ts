@@ -36,6 +36,21 @@ function isFallbackImage(image?: string) {
   return !image || image === fallbackFoodImage;
 }
 
+function getFoodChefUsername(dto: FoodDto) {
+  return firstText(
+    dto.chefUsername,
+    dto.chefUserName,
+    dto.username,
+    dto.userName,
+    dto.ownerUsername,
+    dto.createdByUsername,
+    dto.chefUser?.username,
+    dto.chefUser?.userName,
+    dto.user?.username,
+    dto.user?.userName
+  );
+}
+
 export function mapFoodDtoToFood(dto: FoodDto): Food {
   const location = firstText(
     dto.location,
@@ -53,6 +68,7 @@ export function mapFoodDtoToFood(dto: FoodDto): Food {
     remaining: toRemainingText(dto.remaining),
     chef: firstText(dto.chef, dto.chefName, dto.chefDisplayName, dto.chefFullName),
     chefId: dto.chefId ?? "",
+    chefUsername: getFoodChefUsername(dto),
     location,
     price: toText(dto.price),
     unit: toText(dto.unit) || "تومان",
@@ -79,6 +95,7 @@ export function mergeFoodWithCompleteFood(food: Food, completeFood?: Food): Food
     remaining: food.remaining || completeFood.remaining,
     chef: food.chef || completeFood.chef,
     chefId: food.chefId || completeFood.chefId,
+    chefUsername: food.chefUsername || completeFood.chefUsername,
     location: food.location || completeFood.location,
     price: food.price || completeFood.price,
     unit: food.unit || completeFood.unit,

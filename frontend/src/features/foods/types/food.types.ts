@@ -6,6 +6,7 @@ export type Food = {
   remaining: string;
   chef: string;
   chefId: number | string;
+  chefUsername?: string;
   location: string;
   price: string;
   unit?: string;
@@ -24,6 +25,24 @@ export type FoodDto = {
   chefName?: string | null;
   chefFullName?: string | null;
   chefDisplayName?: string | null;
+  chefUsername?: string | null;
+  chefUserName?: string | null;
+  username?: string | null;
+  userName?: string | null;
+  ownerUsername?: string | null;
+  createdByUsername?: string | null;
+  chefUser?: {
+    username?: string | null;
+    userName?: string | null;
+    displayName?: string | null;
+    id?: number | string | null;
+  } | null;
+  user?: {
+    username?: string | null;
+    userName?: string | null;
+    displayName?: string | null;
+    id?: number | string | null;
+  } | null;
   chefId?: number | string | null;
   location?: string | null;
   address?: string | null;

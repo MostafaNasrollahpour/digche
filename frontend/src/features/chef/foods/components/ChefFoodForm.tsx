@@ -34,6 +34,8 @@ const categories = [
   "غذای اصلی",
   "پیش غذا",
   "کیک و شیرینی",
+  "کوکو و کتلت",
+
 ];
 
 const inputClassName =
