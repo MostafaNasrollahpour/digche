@@ -1,3 +1,4 @@
+
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -27,7 +28,7 @@ type ChatBoxProps = {
   mode: "customer" | "chef";
   initialConversationId?: string | null;
   startConversation?: StartChatConversationInput | null;
-  initialParticipantUsername?: string | null;
+  initialParticipantSearchText?: string | null;
 };
 
 function formatTime(value?: string | null) {
@@ -130,7 +131,7 @@ export function ChatBox({
   mode,
   initialConversationId = null,
   startConversation = null,
-  initialParticipantUsername = null,
+  initialParticipantSearchText = null,
 }: ChatBoxProps) {
   const currentUser = useAuthStore((state) => state.currentUser);
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -141,7 +142,6 @@ export function ChatBox({
   const [isStartingConversation, setIsStartingConversation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const searchDebounceTimer = useRef<number | null>(null);
-  const bootedInitialParticipantSearchRef = useRef("");
 
   const currentActorId = getCurrentActorId(currentUser);
   const currentActor = useMemo(
@@ -179,6 +179,19 @@ export function ChatBox({
     initialConversationId,
     startConversation,
   });
+
+  useEffect(() => {
+    const normalizedUsername = String(
+      initialParticipantSearchText ?? "",
+    ).trim();
+
+    if (!normalizedUsername) {
+      return;
+    }
+
+    setParticipantSearchText(normalizedUsername);
+    void searchUsersByUsername(normalizedUsername);
+  }, [initialParticipantSearchText, searchUsersByUsername]);
 
   const selectedTitle = selectedConversation
     ? getConversationTitle(selectedConversation, currentActorId)
@@ -245,28 +258,6 @@ export function ChatBox({
     loadOlderMessages,
     selectedConversationId,
   ]);
-
-  useEffect(() => {
-    const username = String(initialParticipantUsername ?? "").trim();
-
-    if (!username || bootedInitialParticipantSearchRef.current === username) {
-      return;
-    }
-
-    bootedInitialParticipantSearchRef.current = username;
-    setParticipantSearchText(username);
-
-    if (searchDebounceTimer.current) {
-      window.clearTimeout(searchDebounceTimer.current);
-    }
-
-    if (username.length < 2) {
-      clearUserSearch();
-      return;
-    }
-
-    void searchUsersByUsername(username);
-  }, [clearUserSearch, initialParticipantUsername, searchUsersByUsername]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

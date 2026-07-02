@@ -1,6 +1,6 @@
+
 "use client";
 
-import Image from "next/image";
 import { ClipboardList, DollarSign, Star, Utensils } from "lucide-react";
 import { useMemo } from "react";
 import { useAuthStore } from "@/store/auth-store";
@@ -34,14 +34,6 @@ function getValidDate(value?: string) {
   return date;
 }
 
-function isSameDay(firstDate: Date, secondDate: Date) {
-  return (
-    firstDate.getFullYear() === secondDate.getFullYear() &&
-    firstDate.getMonth() === secondDate.getMonth() &&
-    firstDate.getDate() === secondDate.getDate()
-  );
-}
-
 function isSameMonth(firstDate: Date, secondDate: Date) {
   return (
     firstDate.getFullYear() === secondDate.getFullYear() &&
@@ -60,16 +52,12 @@ export default function ChefDashboardScreen() {
   const orders = useOrderStore((state) => state.orders);
   const { data: foods = [] } = useChefFoods();
 
-  const {
-    data: backendDashboard,
-    isLoading,
-    isError,
-  } = useChefDashboard();
+  const { data: backendDashboard, isLoading, isError } = useChefDashboard();
 
   const localDashboardData = useMemo(() => {
     if (!currentUser || currentUser.role !== "chef") {
       return {
-        todayOrdersCount: 0,
+        totalOrdersCount: 0,
         monthlyIncome: 0,
         activeFoodsCount: 0,
       };
@@ -81,16 +69,12 @@ export default function ChefDashboardScreen() {
 
     const chefOrders = orders.filter(
       (order) =>
-        String(order.chefId) === userId || String(order.chefId) === publicId
+        String(order.chefId) === userId || String(order.chefId) === publicId,
     );
 
-    const todayOrdersCount = chefOrders.filter((order) => {
-      const orderDate = getValidDate(order.orderedAt);
-
-      if (!orderDate) return false;
-
-      return isSameDay(orderDate, now) && order.status !== "cancelled";
-    }).length;
+    const totalOrdersCount = chefOrders.filter(
+      (order) => order.status !== "cancelled",
+    ).length;
 
     const monthlyIncome = chefOrders
       .filter((order) => {
@@ -106,11 +90,11 @@ export default function ChefDashboardScreen() {
 
     const activeFoodsCount = foods.filter(
       (food) =>
-        String(food.chefId) === userId || String(food.chefId) === publicId
+        String(food.chefId) === userId || String(food.chefId) === publicId,
     ).length;
 
     return {
-      todayOrdersCount,
+      totalOrdersCount,
       monthlyIncome,
       activeFoodsCount,
     };
@@ -130,33 +114,24 @@ export default function ChefDashboardScreen() {
     );
   }
 
-  const avatarSrc =
-    backendDashboard?.chefAvatar || currentUser.avatar || "/images/chef.webp";
-
-  const isBase64Avatar = avatarSrc.startsWith("data:");
-
-  const displayName =
-    backendDashboard?.chefName ||
-    currentUser.name ||
-    currentUser.chefDisplayName ||
-    currentUser.username ||
-    "آشپز دیگچه";
-
   const monthlyIncome =
     backendDashboard?.stats.monthlyIncome ?? localDashboardData.monthlyIncome;
 
-  const todayOrdersCount =
-    backendDashboard?.stats.todayOrdersCount ??
-    localDashboardData.todayOrdersCount;
+  const totalOrdersCount =
+    backendDashboard?.stats.totalOrdersCount ??
+    localDashboardData.totalOrdersCount;
 
-  const customerRating = backendDashboard?.stats.customerRating ?? 4.8;
+  const customerRating = backendDashboard?.stats.customerRating ?? 0;
 
   const activeFoodsCount =
     backendDashboard?.stats.activeFoodsCount ??
     localDashboardData.activeFoodsCount;
 
   return (
-    <section dir="rtl" className="relative h-full overflow-y-auto lg:overflow-hidden">
+    <section
+      dir="rtl"
+      className="relative h-full overflow-y-auto lg:overflow-hidden"
+    >
       <div className="h-full px-7 py-6 lg:px-9">
         <div className="flex items-start justify-between gap-5">
           <div className="text-right">
@@ -164,42 +139,25 @@ export default function ChefDashboardScreen() {
               👋 خوش اومدی!
             </h1>
 
-
             {isLoading && (
               <p className="mt-2 text-[10px] font-medium text-gray-400">
                 در حال دریافت اطلاعات داشبورد...
               </p>
             )}
 
+            {isError && (
+              <p className="mt-2 text-[10px] font-medium text-red-500">
+                دریافت آمار داشبورد از بک‌اند ناموفق بود؛ مقدارهای محلی نمایش
+                داده شده‌اند.
+              </p>
+            )}
           </div>
 
-          <ChefProfileBadge/>
-          {/* <div
-            dir="ltr"
-            className="flex h-9 w-[118px] shrink-0 items-center justify-end gap-2 rounded-[3px] bg-[#F2E6DB] px-2 shadow-sm"
-          >
-            <span
-              dir="rtl"
-              className="truncate text-[10px] font-medium text-gray-900"
-              title={displayName}
-            >
-              {displayName}
-            </span>
-
-            <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full bg-[#F2CDB5]">
-              <Image
-                src={avatarSrc}
-                alt={displayName}
-                fill
-                className="object-cover"
-                unoptimized={isBase64Avatar}
-              />
-            </div>
-          </div> */}
+          <ChefProfileBadge />
         </div>
 
         <div className="mt-14 flex justify-center">
-          <div className="grid w-full max-w-[520px] lg:grid-cols-2 sm:grid-cols-1 gap-y-5 sm:gap-5">
+          <div className="grid w-full max-w-[520px] gap-y-5 sm:grid-cols-1 sm:gap-5 lg:grid-cols-2">
             <DashboardStatCard
               title="درآمد این ماه"
               value={formatNumber(monthlyIncome)}
@@ -210,9 +168,9 @@ export default function ChefDashboardScreen() {
             />
 
             <DashboardStatCard
-              title="سفارش‌های امروز"
-              value={formatNumber(todayOrdersCount)}
-              subtitle="سفارش جدید"
+              title="کل سفارش‌ها"
+              value={formatNumber(totalOrdersCount)}
+              subtitle="سفارش ثبت‌شده"
               icon={ClipboardList}
               cardClassName="bg-[#F2C6A7]"
               iconClassName="bg-[#D87843] text-gray-950"

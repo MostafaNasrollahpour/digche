@@ -5,17 +5,37 @@ import type {
 
 const defaultChefAvatar = "/images/chef.webp";
 
+function toText(value: unknown) {
+  return String(value ?? "").trim();
+}
+
+function toNumber(value: unknown) {
+  const numericValue = Number(value ?? 0);
+
+  return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
 export function mapChefDashboardDtoToData(
-  dto: ChefDashboardDto
+  dto: ChefDashboardDto,
 ): ChefDashboardData {
   return {
-    chefName: dto.chefName?.trim() || "آشپز دیگچه",
-    chefAvatar: dto.chefAvatar?.trim() || defaultChefAvatar,
+    chefName: toText(dto.chefName) || "آشپز دیگچه",
+    chefAvatar: toText(dto.chefAvatar) || defaultChefAvatar,
     stats: {
-      monthlyIncome: dto.stats?.monthlyIncome ?? 0,
-      todayOrdersCount: dto.stats?.todayOrdersCount ?? 0,
-      customerRating: dto.stats?.customerRating ?? 0,
-      activeFoodsCount: dto.stats?.activeFoodsCount ?? 0,
+      monthlyIncome: toNumber(
+        dto.currentMonthRevenue ?? dto.stats?.monthlyIncome,
+      ),
+      totalOrdersCount: toNumber(
+        dto.totalOrders ??
+          dto.stats?.totalOrdersCount ??
+          dto.stats?.todayOrdersCount,
+      ),
+      customerRating: toNumber(
+        dto.customerRatingAverage ?? dto.stats?.customerRating,
+      ),
+      activeFoodsCount: toNumber(
+        dto.activeDishes ?? dto.stats?.activeFoodsCount,
+      ),
     },
   };
 }

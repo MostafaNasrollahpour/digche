@@ -1,41 +1,23 @@
+import { apiRequest } from "@/shared/api/api-client";
+import type { ApiResponse } from "@/shared/api/api-types";
+import { endpoints } from "@/shared/api/endpoints";
 import type { ChefDashboardDto } from "../types/chef-dashboard.types";
 import { mapChefDashboardDtoToData } from "../mappers/chef-dashboard.mapper";
-import { API_BASE_URL } from "@/config/api";
 
-function getAuthToken() {
-  if (typeof window === "undefined") return null;
-
-  const possibleTokenKeys = ["token", "accessToken", "authToken"];
-
-  for (const key of possibleTokenKeys) {
-    const token = localStorage.getItem(key);
-
-    if (token) return token;
+function unwrapData<T>(response: T | ApiResponse<T>): T {
+  if (response && typeof response === "object" && "data" in response) {
+    return (response as ApiResponse<T>).data;
   }
 
-  return null;
+  return response as T;
 }
 
 export async function getChefDashboard() {
-  const token = getAuthToken();
-
-  const response = await fetch(`${API_BASE_URL}/chef/dashboard`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : {}),
-    },
+  const response = await apiRequest<
+    ChefDashboardDto | ApiResponse<ChefDashboardDto>
+  >(endpoints.chefDashboard.get, {
+    auth: true,
   });
 
-  if (!response.ok) {
-    throw new Error("دریافت اطلاعات داشبورد ناموفق بود.");
-  }
-
-  const data = (await response.json()) as ChefDashboardDto;
-
-  return mapChefDashboardDtoToData(data);
+  return mapChefDashboardDtoToData(unwrapData(response));
 }

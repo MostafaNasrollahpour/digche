@@ -1,3 +1,4 @@
+
 import { ChatBox } from "./ChatBox";
 import type { StartChatConversationInput } from "../types/chat.types";
 
@@ -5,14 +6,14 @@ type ChatFeaturePageProps = {
   mode: "customer" | "chef";
   initialConversationId?: string | null;
   startConversation?: StartChatConversationInput | null;
-  initialParticipantUsername?: string | null;
+  initialParticipantSearchText?: string | null;
 };
 
 export default function ChatFeaturePage({
   mode,
   initialConversationId = null,
   startConversation = null,
-  initialParticipantUsername = null,
+  initialParticipantSearchText = null,
 }: ChatFeaturePageProps) {
   return (
     <section
@@ -23,7 +24,7 @@ export default function ChatFeaturePage({
         mode={mode}
         initialConversationId={initialConversationId}
         startConversation={startConversation}
-        initialParticipantUsername={initialParticipantUsername}
+        initialParticipantSearchText={initialParticipantSearchText}
       />
     </section>
   );

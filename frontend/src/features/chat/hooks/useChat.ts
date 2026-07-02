@@ -1,3 +1,5 @@
+// src/features/chat/hooks/useChat.ts
+
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -85,10 +87,15 @@ function mergeMessages(current: ChatUiMessage[], incoming: ChatUiMessage[]) {
   return sortMessages([...map.values()]);
 }
 
-function upsertConversation(list: ChatConversation[], conversation: ChatConversation) {
+function upsertConversation(
+  list: ChatConversation[],
+  conversation: ChatConversation
+) {
   const exists = list.some((item) => item.id === conversation.id);
   const next = exists
-    ? list.map((item) => (item.id === conversation.id ? { ...item, ...conversation } : item))
+    ? list.map((item) =>
+        item.id === conversation.id ? { ...item, ...conversation } : item
+      )
     : [conversation, ...list];
 
   return [...next].sort((a, b) => {
@@ -106,6 +113,20 @@ function createClientMessageId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function getStartConversationKey(input?: StartChatConversationInput | null) {
+  if (!input?.participantId) {
+    return "";
+  }
+
+  return [
+    input.participantId,
+    input.participantType ?? "user",
+    input.type ?? "direct",
+    input.title ?? "",
+    input.orderId ?? "",
+  ].join("|");
+}
+
 export function useChat({
   accessToken,
   currentActor,
@@ -113,16 +134,18 @@ export function useChat({
   startConversation: startConversationInput = null,
 }: UseChatOptions) {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(
-    initialConversationId
-  );
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(initialConversationId);
   const [messagesByConversation, setMessagesByConversation] = useState<
     Record<string, ChatUiMessage[]>
   >({});
   const [isLoading, setIsLoading] = useState(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [isOlderMessagesLoading, setIsOlderMessagesLoading] = useState(false);
-  const [hasOlderMessages, setHasOlderMessages] = useState<Record<string, boolean>>({});
+  const [hasOlderMessages, setHasOlderMessages] = useState<
+    Record<string, boolean>
+  >({});
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [socketStatus, setSocketStatus] = useState<ChatSocketStatus>("idle");
@@ -130,11 +153,15 @@ export function useChat({
   const [searchedUsers, setSearchedUsers] = useState<ChatSearchUser[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [userSearchError, setUserSearchError] = useState("");
-  const [typingConversationIds, setTypingConversationIds] = useState<Record<string, boolean>>({});
+  const [typingConversationIds, setTypingConversationIds] = useState<
+    Record<string, boolean>
+  >({});
 
   const bootedAccessTokenRef = useRef<string | null>(null);
-  const bootedStartConversationRef = useRef(false);
-  const selectedConversationIdRef = useRef<string | null>(selectedConversationId);
+  const processedStartConversationKeyRef = useRef("");
+  const selectedConversationIdRef = useRef<string | null>(
+    selectedConversationId
+  );
   const socketRef = useRef<WebSocket | null>(null);
   const connectSocketRef = useRef<(() => void) | null>(null);
   const reconnectAttemptRef = useRef(0);
@@ -150,7 +177,9 @@ export function useChat({
   }, [selectedConversationId]);
 
   const selectedConversation =
-    conversations.find((conversation) => conversation.id === selectedConversationId) ?? null;
+    conversations.find(
+      (conversation) => conversation.id === selectedConversationId
+    ) ?? null;
 
   const selectedMessages = selectedConversationId
     ? messagesByConversation[selectedConversationId] ?? []
@@ -183,7 +212,9 @@ export function useChat({
       } catch (error) {
         if (!options.silent) {
           setErrorMessage(
-            error instanceof Error ? error.message : "خطای دریافت گفتگوها رخ داد."
+            error instanceof Error
+              ? error.message
+              : "خطای دریافت گفتگوها رخ داد."
           );
         }
 
@@ -247,19 +278,24 @@ export function useChat({
           limit: 50,
         });
 
-        const normalizedMessages: ChatUiMessage[] = response.messages.map((message) => ({
-          ...message,
-          deliveryStatus:
-            currentActor &&
-            message.senderId === currentActor.id &&
-            message.senderType === currentActor.type
-              ? "sent"
-              : undefined,
-        }));
+        const normalizedMessages: ChatUiMessage[] = response.messages.map(
+          (message) => ({
+            ...message,
+            deliveryStatus:
+              currentActor &&
+              message.senderId === currentActor.id &&
+              message.senderType === currentActor.type
+                ? "sent"
+                : undefined,
+          })
+        );
 
         setMessagesByConversation((prev) => ({
           ...prev,
-          [conversationId]: mergeMessages(prev[conversationId] ?? [], normalizedMessages),
+          [conversationId]: mergeMessages(
+            prev[conversationId] ?? [],
+            normalizedMessages
+          ),
         }));
 
         setHasOlderMessages((prev) => ({
@@ -271,7 +307,6 @@ export function useChat({
 
         if (lastMessage) {
           markConversationReadLocal(conversationId);
-
           notifyConversationRead(conversationId, lastMessage.id);
         }
 
@@ -279,7 +314,9 @@ export function useChat({
       } catch (error) {
         if (!options.silent) {
           setErrorMessage(
-            error instanceof Error ? error.message : "خطای دریافت پیام‌ها رخ داد."
+            error instanceof Error
+              ? error.message
+              : "خطای دریافت پیام‌ها رخ داد."
           );
         }
 
@@ -313,15 +350,17 @@ export function useChat({
         before: firstMessage.createdAt,
       });
 
-      const normalizedMessages: ChatUiMessage[] = response.messages.map((message) => ({
-        ...message,
-        deliveryStatus:
-          currentActor &&
-          message.senderId === currentActor.id &&
-          message.senderType === currentActor.type
-            ? "sent"
-            : undefined,
-      }));
+      const normalizedMessages: ChatUiMessage[] = response.messages.map(
+        (message) => ({
+          ...message,
+          deliveryStatus:
+            currentActor &&
+            message.senderId === currentActor.id &&
+            message.senderType === currentActor.type
+              ? "sent"
+              : undefined,
+        })
+      );
 
       setMessagesByConversation((prev) => ({
         ...prev,
@@ -453,7 +492,10 @@ export function useChat({
         });
       });
 
-      if (message.conversationId === selectedConversationIdRef.current && accessToken) {
+      if (
+        message.conversationId === selectedConversationIdRef.current &&
+        accessToken
+      ) {
         notifyConversationRead(message.conversationId, message.id);
       }
     },
@@ -462,7 +504,11 @@ export function useChat({
 
   const handleMessageRead = useCallback(
     (payload: Extract<SocketPayload, { type: "message.read" }>) => {
-      if (!currentActor || !payload.reader || payload.reader.id === currentActor.id) {
+      if (
+        !currentActor ||
+        !payload.reader ||
+        payload.reader.id === currentActor.id
+      ) {
         return;
       }
 
@@ -486,7 +532,11 @@ export function useChat({
 
   const handleTypingPayload = useCallback(
     (payload: Extract<SocketPayload, { type: "typing" }>) => {
-      if (!payload.actor || !currentActor || payload.actor.id === currentActor.id) {
+      if (
+        !payload.actor ||
+        !currentActor ||
+        payload.actor.id === currentActor.id
+      ) {
         return;
       }
 
@@ -558,7 +608,12 @@ export function useChat({
         setErrorMessage(payload.error?.message || "خطای ارتباط زنده پیام‌ها.");
       }
     },
-    [handleIncomingMessage, handleMessageRead, handleTypingPayload, subscribeToConversation]
+    [
+      handleIncomingMessage,
+      handleMessageRead,
+      handleTypingPayload,
+      subscribeToConversation,
+    ]
   );
 
   const connectSocket = useCallback(() => {
@@ -610,7 +665,10 @@ export function useChat({
 
       const delay =
         REALTIME_RECONNECT_DELAYS[
-          Math.min(reconnectAttemptRef.current, REALTIME_RECONNECT_DELAYS.length - 1)
+          Math.min(
+            reconnectAttemptRef.current,
+            REALTIME_RECONNECT_DELAYS.length - 1
+          )
         ];
 
       reconnectAttemptRef.current += 1;
@@ -663,36 +721,15 @@ export function useChat({
     let cancelled = false;
 
     async function boot() {
-      if (startConversationInput && !bootedStartConversationRef.current) {
-        bootedStartConversationRef.current = true;
-
-        try {
-          setIsLoading(true);
-          const response = await startChatConversation(accessToken!, startConversationInput);
-
-          if (cancelled) return;
-
-          setConversations((prev) => upsertConversation(prev, response.conversation));
-          setSelectedConversationId(response.conversation.id);
-          selectedConversationIdRef.current = response.conversation.id;
-          subscribeToConversation(response.conversation.id);
-          await loadMessages(response.conversation.id);
-          return;
-        } catch (error) {
-          if (!cancelled) {
-            setErrorMessage(error instanceof Error ? error.message : "شروع گفتگو ناموفق بود.");
-          }
-        } finally {
-          if (!cancelled) setIsLoading(false);
-        }
-      }
-
       const loadedConversations = await refreshConversations();
 
       if (cancelled) return;
 
+      const shouldAutoSelectFirstConversation = !startConversationInput;
       const nextConversationId =
-        initialConversationId || loadedConversations[0]?.id || null;
+        initialConversationId ||
+        (shouldAutoSelectFirstConversation ? loadedConversations[0]?.id : null) ||
+        null;
 
       if (nextConversationId) {
         setSelectedConversationId(nextConversationId);
@@ -712,7 +749,77 @@ export function useChat({
     currentActor,
     initialConversationId,
     loadMessages,
-        refreshConversations,
+    refreshConversations,
+    startConversationInput,
+    subscribeToConversation,
+  ]);
+
+  useEffect(() => {
+    if (!accessToken || !currentActor || !startConversationInput) {
+      return;
+    }
+
+    const currentAccessToken = accessToken;
+    const requestedStartConversation = startConversationInput;
+    const startConversationKey = getStartConversationKey(
+      requestedStartConversation
+    );
+
+    if (!startConversationKey) {
+      return;
+    }
+
+    if (processedStartConversationKeyRef.current === startConversationKey) {
+      return;
+    }
+
+    processedStartConversationKeyRef.current = startConversationKey;
+
+    let cancelled = false;
+
+    async function startRequestedConversation() {
+      try {
+        setIsLoading(true);
+        setErrorMessage("");
+
+        const response = await startChatConversation(
+          currentAccessToken,
+          requestedStartConversation
+        );
+
+        if (cancelled) return;
+
+        setConversations((prev) =>
+          upsertConversation(prev, response.conversation)
+        );
+        setSelectedConversationId(response.conversation.id);
+        selectedConversationIdRef.current = response.conversation.id;
+        markConversationReadLocal(response.conversation.id);
+        subscribeToConversation(response.conversation.id);
+        await loadMessages(response.conversation.id);
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(
+            error instanceof Error ? error.message : "شروع گفتگو ناموفق بود."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void startRequestedConversation();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    accessToken,
+    currentActor,
+    loadMessages,
+    markConversationReadLocal,
     startConversationInput,
     subscribeToConversation,
   ]);
@@ -737,7 +844,6 @@ export function useChat({
     };
   }, [accessToken, currentActor, loadMessages, refreshConversations, socketStatus]);
 
-
   const searchUsersByUsername = useCallback(
     async (username: string) => {
       const normalizedUsername = username.trim();
@@ -752,7 +858,10 @@ export function useChat({
       setUserSearchError("");
 
       try {
-        const users = await searchChatUsersByUsername(accessToken, normalizedUsername);
+        const users = await searchChatUsersByUsername(
+          accessToken,
+          normalizedUsername
+        );
         setSearchedUsers(users);
         return users;
       } catch (error) {
@@ -806,29 +915,37 @@ export function useChat({
     }, 1400);
   }, []);
 
-  const markOptimisticFailedLater = useCallback((conversationId: string, clientMessageId: string) => {
-    optimisticTimersRef.current[clientMessageId] = window.setTimeout(() => {
-      setMessagesByConversation((prev) => {
-        const messages = prev[conversationId] ?? [];
+  const markOptimisticFailedLater = useCallback(
+    (conversationId: string, clientMessageId: string) => {
+      optimisticTimersRef.current[clientMessageId] = window.setTimeout(() => {
+        setMessagesByConversation((prev) => {
+          const messages = prev[conversationId] ?? [];
 
-        return {
-          ...prev,
-          [conversationId]: messages.map((message) =>
-            message.clientMessageId === clientMessageId &&
-            message.deliveryStatus === "sending"
-              ? { ...message, deliveryStatus: "failed" }
-              : message
-          ),
-        };
-      });
-    }, OPTIMISTIC_TIMEOUT_MS);
-  }, []);
+          return {
+            ...prev,
+            [conversationId]: messages.map((message) =>
+              message.clientMessageId === clientMessageId &&
+              message.deliveryStatus === "sending"
+                ? { ...message, deliveryStatus: "failed" }
+                : message
+            ),
+          };
+        });
+      }, OPTIMISTIC_TIMEOUT_MS);
+    },
+    []
+  );
 
   const sendMessage = useCallback(
     async (body: string) => {
       const normalizedBody = body.trim();
 
-      if (!accessToken || !selectedConversationId || !currentActor || !normalizedBody) {
+      if (
+        !accessToken ||
+        !selectedConversationId ||
+        !currentActor ||
+        !normalizedBody
+      ) {
         return null;
       }
 
@@ -851,9 +968,10 @@ export function useChat({
 
       setMessagesByConversation((prev) => ({
         ...prev,
-        [selectedConversationId]: mergeMessages(prev[selectedConversationId] ?? [], [
-          optimisticMessage,
-        ]),
+        [selectedConversationId]: mergeMessages(
+          prev[selectedConversationId] ?? [],
+          [optimisticMessage]
+        ),
       }));
 
       setConversations((prev) =>
@@ -886,10 +1004,14 @@ export function useChat({
       }
 
       try {
-        const response = await sendChatMessageHttp(accessToken, selectedConversationId, {
-          body: normalizedBody,
-          clientMessageId,
-        });
+        const response = await sendChatMessageHttp(
+          accessToken,
+          selectedConversationId,
+          {
+            body: normalizedBody,
+            clientMessageId,
+          }
+        );
 
         clearOptimisticTimer(clientMessageId);
 
@@ -901,9 +1023,10 @@ export function useChat({
 
         setMessagesByConversation((prev) => ({
           ...prev,
-          [selectedConversationId]: mergeMessages(prev[selectedConversationId] ?? [], [
-            sentMessage,
-          ]).filter((message) => message.id !== optimisticMessage.id),
+          [selectedConversationId]: mergeMessages(
+            prev[selectedConversationId] ?? [],
+            [sentMessage]
+          ).filter((message) => message.id !== optimisticMessage.id),
         }));
 
         void refreshConversations({ silent: true });
@@ -923,7 +1046,9 @@ export function useChat({
           };
         });
 
-        setErrorMessage(error instanceof Error ? error.message : "ارسال پیام ناموفق بود.");
+        setErrorMessage(
+          error instanceof Error ? error.message : "ارسال پیام ناموفق بود."
+        );
         return null;
       } finally {
         setIsSending(false);
@@ -934,16 +1059,10 @@ export function useChat({
       clearOptimisticTimer,
       currentActor,
       markOptimisticFailedLater,
-      searchedUsers,
-    isSearchingUsers,
-    userSearchError,
-    searchUsersByUsername,
-    clearUserSearch,
-    refreshConversations,
+      refreshConversations,
       selectedConversationId,
     ]
   );
-
 
   const startDirectConversation = useCallback(
     async (input: StartChatConversationInput) => {
@@ -965,13 +1084,16 @@ export function useChat({
         const response = await startChatConversation(accessToken, {
           participantId,
           participantType: input.participantType ?? "user",
-          participantDisplayName: input.participantDisplayName?.trim() || participantId,
+          participantDisplayName:
+            input.participantDisplayName?.trim() || participantId,
           title: input.title ?? null,
           type: input.type ?? "direct",
           orderId: input.orderId ?? null,
         });
 
-        setConversations((prev) => upsertConversation(prev, response.conversation));
+        setConversations((prev) =>
+          upsertConversation(prev, response.conversation)
+        );
         setSelectedConversationId(response.conversation.id);
         selectedConversationIdRef.current = response.conversation.id;
         markConversationReadLocal(response.conversation.id);
@@ -980,7 +1102,9 @@ export function useChat({
 
         return response.conversation;
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "شروع گفتگو ناموفق بود.");
+        setErrorMessage(
+          error instanceof Error ? error.message : "شروع گفتگو ناموفق بود."
+        );
         return null;
       } finally {
         setIsLoading(false);
@@ -993,8 +1117,8 @@ export function useChat({
     (message: ChatMessage) =>
       Boolean(
         currentActor &&
-        message.senderId === currentActor.id &&
-        message.senderType === currentActor.type
+          message.senderId === currentActor.id &&
+          message.senderType === currentActor.type
       ),
     [currentActor]
   );

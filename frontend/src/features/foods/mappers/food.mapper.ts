@@ -36,28 +36,13 @@ function isFallbackImage(image?: string) {
   return !image || image === fallbackFoodImage;
 }
 
-function getFoodChefUsername(dto: FoodDto) {
-  return firstText(
-    dto.chefUsername,
-    dto.chefUserName,
-    dto.username,
-    dto.userName,
-    dto.ownerUsername,
-    dto.createdByUsername,
-    dto.chefUser?.username,
-    dto.chefUser?.userName,
-    dto.user?.username,
-    dto.user?.userName
-  );
-}
-
 export function mapFoodDtoToFood(dto: FoodDto): Food {
   const location = firstText(
     dto.location,
     dto.address,
     dto.province && dto.city ? `${dto.province}، ${dto.city}` : undefined,
     dto.city,
-    dto.province
+    dto.province,
   );
 
   return {
@@ -66,13 +51,30 @@ export function mapFoodDtoToFood(dto: FoodDto): Food {
     category: toText(dto.category),
     rating: toNumber(dto.rating),
     remaining: toRemainingText(dto.remaining),
-    chef: firstText(dto.chef, dto.chefName, dto.chefDisplayName, dto.chefFullName),
+    chef: firstText(
+      dto.chef,
+      dto.chefName,
+      dto.chefDisplayName,
+      dto.chefFullName,
+    ),
     chefId: dto.chefId ?? "",
-    chefUsername: getFoodChefUsername(dto),
+    chefUsername: firstText(
+      dto.chefUsername,
+      dto.chefUserName,
+      dto.username,
+      dto.userName,
+      dto.ownerUsername,
+      dto.createdByUsername,
+      dto.chefUser?.username,
+      dto.chefUser?.userName,
+      dto.user?.username,
+      dto.user?.userName,
+    ),
     location,
     price: toText(dto.price),
     unit: toText(dto.unit) || "تومان",
-    image: firstText(dto.image, dto.imageUrl, dto.photoUrl) || fallbackFoodImage,
+    image:
+      firstText(dto.image, dto.imageUrl, dto.photoUrl) || fallbackFoodImage,
     ingredients: toIngredientsText(dto.ingredients),
     description: toText(dto.description),
   };
@@ -82,7 +84,10 @@ export function mapFoodDtosToFoods(dtos: FoodDto[]): Food[] {
   return dtos.map(mapFoodDtoToFood);
 }
 
-export function mergeFoodWithCompleteFood(food: Food, completeFood?: Food): Food {
+export function mergeFoodWithCompleteFood(
+  food: Food,
+  completeFood?: Food,
+): Food {
   if (!completeFood) {
     return food;
   }

@@ -1,4 +1,8 @@
 export const endpoints = {
+  chefDashboard: {
+    get: "/core/chef/dashboard",
+  },
+
   foods: {
     list: "/core/Dishes/available",
     nearby: "/core/Dishes/available",

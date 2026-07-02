@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -27,22 +28,18 @@ interface FoodDetailsActionsProps {
 }
 
 function getChefChatHref(food: Food) {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams({
+    chefId: String(food.chefId),
+    chefName: food.chef || "آشپز دیگچه",
+    foodId: String(food.id),
+    foodTitle: food.title,
+  });
 
-  const chefId = String(food.chefId ?? "").trim();
   const chefUsername = String(food.chefUsername ?? "").trim();
-
-  if (chefId) {
-    params.set("chefId", chefId);
-  }
 
   if (chefUsername) {
     params.set("username", chefUsername);
   }
-
-  params.set("chefName", food.chef || "آشپز دیگچه");
-  params.set("foodId", String(food.id));
-  params.set("foodTitle", food.title);
 
   return `/customer/messages?${params.toString()}`;
 }
@@ -79,9 +76,7 @@ export default function FoodDetailsActions({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const chefChatHref = getChefChatHref(food);
-  const canMessageChef =
-    canAddToCart &&
-    Boolean(String(food.chefId ?? "").trim() || food.chefUsername?.trim());
+  const canMessageChef = canAddToCart && Boolean(food.chefId);
 
   const handleAddToCart = async () => {
     if (isCartPending) return;

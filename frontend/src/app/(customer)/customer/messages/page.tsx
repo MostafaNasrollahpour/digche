@@ -1,3 +1,4 @@
+
 import { AuthRouteGuard } from "@/features/auth/components/AuthRouteGuard";
 import ChatFeaturePage from "@/features/chat/components/ChatFeaturePage";
 import type { StartChatConversationInput } from "@/features/chat/types/chat.types";
@@ -5,10 +6,10 @@ import type { StartChatConversationInput } from "@/features/chat/types/chat.type
 type CustomerMessagesPageProps = {
   searchParams?: {
     chefId?: string | string[];
+    username?: string | string[];
     chefName?: string | string[];
     foodId?: string | string[];
     foodTitle?: string | string[];
-    username?: string | string[];
   };
 };
 
@@ -24,15 +25,15 @@ export default function CustomerMessagesPage({
   searchParams,
 }: CustomerMessagesPageProps) {
   const chefId = getSearchParamValue(searchParams?.chefId).trim();
+  const username = getSearchParamValue(searchParams?.username).trim();
   const chefName = getSearchParamValue(searchParams?.chefName).trim();
   const foodTitle = getSearchParamValue(searchParams?.foodTitle).trim();
-  const username = getSearchParamValue(searchParams?.username).trim();
 
   const startConversation: StartChatConversationInput | null = chefId
     ? {
         participantId: chefId,
         participantType: "user",
-        participantDisplayName: chefName || "آشپز دیگچه",
+        participantDisplayName: chefName || username || "آشپز دیگچه",
         type: "direct",
         title: foodTitle ? `درباره ${foodTitle}` : null,
       }
@@ -44,7 +45,7 @@ export default function CustomerMessagesPage({
         <ChatFeaturePage
           mode="customer"
           startConversation={startConversation}
-          initialParticipantUsername={username}
+          initialParticipantSearchText={username}
         />
       </main>
     </AuthRouteGuard>

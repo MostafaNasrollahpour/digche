@@ -25,6 +25,7 @@ export type FoodDto = {
   chefName?: string | null;
   chefFullName?: string | null;
   chefDisplayName?: string | null;
+  chefId?: number | string | null;
   chefUsername?: string | null;
   chefUserName?: string | null;
   username?: string | null;
@@ -34,16 +35,11 @@ export type FoodDto = {
   chefUser?: {
     username?: string | null;
     userName?: string | null;
-    displayName?: string | null;
-    id?: number | string | null;
   } | null;
   user?: {
     username?: string | null;
     userName?: string | null;
-    displayName?: string | null;
-    id?: number | string | null;
   } | null;
-  chefId?: number | string | null;
   location?: string | null;
   address?: string | null;
   city?: string | null;

@@ -1,6 +1,6 @@
 export type ChefDashboardStats = {
   monthlyIncome: number;
-  todayOrdersCount: number;
+  totalOrdersCount: number;
   customerRating: number;
   activeFoodsCount: number;
 };
@@ -12,12 +12,17 @@ export type ChefDashboardData = {
 };
 
 export type ChefDashboardDto = {
-  chefName?: string;
-  chefAvatar?: string;
+  chefName?: string | null;
+  chefAvatar?: string | null;
+  totalOrders?: number | string | null;
+  currentMonthRevenue?: number | string | null;
+  activeDishes?: number | string | null;
+  customerRatingAverage?: number | string | null;
   stats?: {
-    monthlyIncome?: number;
-    todayOrdersCount?: number;
-    customerRating?: number;
-    activeFoodsCount?: number;
-  };
+    monthlyIncome?: number | string | null;
+    totalOrdersCount?: number | string | null;
+    todayOrdersCount?: number | string | null;
+    customerRating?: number | string | null;
+    activeFoodsCount?: number | string | null;
+  } | null;
 };
