@@ -106,8 +106,10 @@ export default function CartCheckoutScreen() {
     }
 
     try {
-      await createOrder.mutateAsync({});
-
+      await createOrder.mutateAsync({
+        deliveryAddress: addressView.fullAddress,
+      });
+      
       try {
         await clearRemoteCart.mutateAsync(undefined);
       } catch {

@@ -11,12 +11,10 @@ type CoreResult<T> = {
 };
 
 type CreateOrderPayload = {
-  items?: Array<{
-    dishId: number | string;
-    quantity: number;
-  }>;
-  deliveryAddress?: string;
+  deliveryAddress: string;
 };
+
+
 
 function unwrapData<T>(response: T | ApiResponse<T> | CoreResult<T>): T {
   if (response && typeof response === "object" && "data" in response) {
@@ -27,11 +25,11 @@ function unwrapData<T>(response: T | ApiResponse<T> | CoreResult<T>): T {
 }
 
 export const ordersApi = {
-    async createOrder(payload?: CreateOrderPayload) {
+    async createOrder(payload: CreateOrderPayload) {
     return apiRequest<unknown>(endpoints.orders.create, {
         method: "POST",
         auth: true,
-        body: payload ?? {},
+        body: payload,
     });
     },
 
