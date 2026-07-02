@@ -51,5 +51,7 @@ export const endpoints = {
   detail: (id: number | string) => `/core/Orders/${id}`,
   customer: "/core/Orders/customer",
   chef: "/core/Orders/chef",
+  updateStatus: (id: number | string) => `/core/Orders/${id}/status`,
+
 },
 };

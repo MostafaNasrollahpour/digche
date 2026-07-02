@@ -1,8 +1,17 @@
+
 import type { ChefOrder, OrderStatus } from "@/store/order-store";
 
 type AnyOrderDto = Record<string, any>;
 
 const fallbackImage = "/images/cake.webp";
+
+const statusCodeToStatus: Record<string, OrderStatus> = {
+  "0": "pending",
+  "1": "preparing",
+  "2": "ready",
+  "3": "delivered",
+  "4": "cancelled",
+};
 
 function normalizeStatus(status: unknown): OrderStatus {
   if (
@@ -15,7 +24,9 @@ function normalizeStatus(status: unknown): OrderStatus {
     return status;
   }
 
-  return "pending";
+  const normalizedStatus = String(status ?? "").trim();
+
+  return statusCodeToStatus[normalizedStatus] ?? "pending";
 }
 
 function resolveImageSrc(src?: string) {
@@ -38,7 +49,11 @@ function resolveImageSrc(src?: string) {
   return `/images/${value}`;
 }
 
-function mapOneOrder(dto: AnyOrderDto, item?: AnyOrderDto, index = 0): ChefOrder {
+function mapOneOrder(
+  dto: AnyOrderDto,
+  item?: AnyOrderDto,
+  index = 0,
+): ChefOrder {
   const source = item ?? dto;
 
   return {
@@ -64,7 +79,7 @@ function mapOneOrder(dto: AnyOrderDto, item?: AnyOrderDto, index = 0): ChefOrder
       source.foodImage ??
         source.dishImage ??
         source.imageUrl ??
-        source.dish?.imageUrl
+        source.dish?.imageUrl,
     ),
     quantity: Number(source.quantity ?? 1),
     price: String(source.price ?? source.unitPrice ?? source.totalPrice ?? ""),

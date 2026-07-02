@@ -1,3 +1,4 @@
+
 // src/store/order-store.ts
 
 import { create } from "zustand";
@@ -11,10 +12,10 @@ export type OrderStatus =
   | "cancelled";
 
 export type ChefOrder = {
-  id: number;
+  id: number | string;
   chefId: number | string;
   chefName?: string;
-  customerId?: number;
+  customerId?: number | string;
   customerName: string;
   customerPhone?: string;
   foodId: number | string;
@@ -27,10 +28,7 @@ export type ChefOrder = {
   orderedAt: string;
 };
 
-type CreateChefOrderPayload = Omit<
-  ChefOrder,
-  "id" | "status" | "orderedAt"
-> & {
+type CreateChefOrderPayload = Omit<ChefOrder, "id" | "status" | "orderedAt"> & {
   status?: OrderStatus;
   orderedAt?: string;
 };
@@ -87,7 +85,7 @@ export const useOrderStore = create<OrderStore>()(
       updateOrderStatus: (orderID, status) => {
         set((state) => ({
           orders: state.orders.map((order) =>
-            order.id === Number(orderID) ? { ...order, status } : order
+            String(order.id) === String(orderID) ? { ...order, status } : order,
           ),
         }));
       },
@@ -115,6 +113,6 @@ export const useOrderStore = create<OrderStore>()(
       partialize: (state) => ({
         orders: state.orders,
       }),
-    }
-  )
+    },
+  ),
 );
