@@ -34,8 +34,8 @@ public class TestAuthController : ControllerBase
             return BadRequest(new { error = "JWT Secret must be at least 32 bytes (256 bits)." });
 
         // 3. اطلاعات کاربر (مصنوعی)
-        var userId = Guid.NewGuid();
-        // var userId = Guid.Parse("11111111-1111-1111-1111-111111111111"); // یک Guid ثابت که در دیتابیس موجود است
+        // var userId = Guid.NewGuid();
+        var userId = Guid.Parse("11111111-1111-1111-1111-111111111111"); // یک Guid ثابت که در دیتابیس موجود است
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
