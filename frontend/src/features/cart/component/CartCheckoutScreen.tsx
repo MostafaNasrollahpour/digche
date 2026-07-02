@@ -6,13 +6,13 @@ import { MapPin, ShoppingBag } from "lucide-react";
 import { useMemo } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
-import { useOrderStore } from "@/store/order-store";
 import { useClearCart } from "@/features/cart/hooks/use-clear-cart";
 import {
   getAddressDetailsFromAddress,
   getProvinceCityFromAddress,
 } from "@/shared/location/location-text";
 import { toPersianDigits } from "@/shared/utils/persian-number";
+import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 
 const toEnglishDigits = (value: string) => {
   return value
@@ -69,7 +69,7 @@ export default function CartCheckoutScreen() {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  const addOrders = useOrderStore((state) => state.addOrders);
+  const createOrder = useCreateOrder();
 
   const clearRemoteCart = useClearCart();
 
@@ -115,24 +115,9 @@ export default function CartCheckoutScreen() {
     const orderedAt = new Date().toISOString();
 
     try {
-      await clearRemoteCart.mutateAsync(undefined);
+      await createOrder.mutateAsync(undefined);
 
-      addOrders(
-        items.map((item) => ({
-          chefId: item.chefId,
-          customerId: currentUser?.id,
-          customerName: receiverName,
-          customerPhone: currentUser?.phone,
-          foodId: item.id,
-          foodTitle: item.title,
-          foodImage: item.image,
-          quantity: item.quantity,
-          price: item.price,
-          unit: item.unit,
-          status: "preparing",
-          orderedAt,
-        }))
-      );
+      await clearRemoteCart.mutateAsync(undefined);
 
       clearCart();
 
@@ -142,7 +127,7 @@ export default function CartCheckoutScreen() {
       alert(
         error instanceof Error
           ? error.message
-          : "ثبت سفارش یا خالی کردن سبد خرید ناموفق بود."
+          : "ثبت سفارش ناموفق بود."
       );
     }
   };

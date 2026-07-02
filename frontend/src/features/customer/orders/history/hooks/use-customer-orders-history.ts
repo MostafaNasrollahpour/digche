@@ -1,11 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { customerOrdersHistoryApi } from "../api/customer-orders-history.api";
+import { ordersApi } from "@/features/orders/api/orders.api";
 
 export function useCustomerOrdersHistory() {
   return useQuery({
-    queryKey: ["customer", "orders", "history"],
-    queryFn: customerOrdersHistoryApi.getCustomerOrdersHistory,
+    queryKey: ["orders", "customer"],
+    queryFn: ordersApi.getCustomerOrders,
   });
 }
