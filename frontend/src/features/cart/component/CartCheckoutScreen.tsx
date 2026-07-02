@@ -7,12 +7,12 @@ import { useMemo } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
 import { useClearCart } from "@/features/cart/hooks/use-clear-cart";
+import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 import {
   getAddressDetailsFromAddress,
   getProvinceCityFromAddress,
 } from "@/shared/location/location-text";
 import { toPersianDigits } from "@/shared/utils/persian-number";
-import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 
 const toEnglishDigits = (value: string) => {
   return value
@@ -70,7 +70,6 @@ export default function CartCheckoutScreen() {
   const clearCart = useCartStore((state) => state.clearCart);
 
   const createOrder = useCreateOrder();
-
   const clearRemoteCart = useClearCart();
 
   const address = currentUser?.address ?? currentUser?.location ?? "";
@@ -79,6 +78,8 @@ export default function CartCheckoutScreen() {
   const receiverName = getUserFullName(currentUser);
   const receiverPhone = currentUser?.phone ?? "شماره تماس ثبت نشده";
 
+  const isSubmitting = createOrder.isPending || clearRemoteCart.isPending;
+
   const summary = useMemo(() => {
     const totalQuantity = items.reduce((total, item) => {
       return total + item.quantity;
@@ -86,6 +87,7 @@ export default function CartCheckoutScreen() {
 
     const totalPrice = items.reduce((total, item) => {
       const itemPrice = getNumericPrice(item.price);
+
       return total + itemPrice * item.quantity;
     }, 0);
 
@@ -96,39 +98,28 @@ export default function CartCheckoutScreen() {
   }, [items]);
 
   const handleSubmitOrder = async () => {
-    if (items.length === 0 || clearRemoteCart.isPending) return;
+    if (items.length === 0 || isSubmitting) return;
 
     if (!addressView.hasAddress) {
       alert("برای ثبت سفارش باید ابتدا آدرس تحویل را ثبت کنید.");
       return;
     }
 
-    const hasInvalidItem = items.some((item) => !item.chefId);
-
-    if (hasInvalidItem) {
-      alert(
-        "بعضی از آیتم‌های سبد خرید اطلاعات آشپز ندارند. لطفاً سبد را خالی کنید و غذاها را دوباره اضافه کنید."
-      );
-      return;
-    }
-
-    const orderedAt = new Date().toISOString();
-
     try {
-      await createOrder.mutateAsync(undefined);
+      await createOrder.mutateAsync({});
 
-      await clearRemoteCart.mutateAsync(undefined);
+      try {
+        await clearRemoteCart.mutateAsync(undefined);
+      } catch {
+        console.warn("سفارش ثبت شد، اما خالی کردن سبد خرید ناموفق بود.");
+      }
 
       clearCart();
 
       alert("سفارش شما با موفقیت ثبت شد.");
       router.push("/customer/orders/history");
     } catch (error) {
-      alert(
-        error instanceof Error
-          ? error.message
-          : "ثبت سفارش ناموفق بود."
-      );
+      alert(error instanceof Error ? error.message : "ثبت سفارش ناموفق بود.");
     }
   };
 
@@ -164,9 +155,7 @@ export default function CartCheckoutScreen() {
               <div className="flex items-center gap-2">
                 <MapPin size={18} className="text-[#D16565]" />
 
-                <p className="text-sm font-bold text-gray-950">
-                  تحویل به: 
-                </p>
+                <p className="text-sm font-bold text-gray-950">تحویل به:</p>
               </div>
 
               {addressView.hasAddress ? (
@@ -194,7 +183,7 @@ export default function CartCheckoutScreen() {
               </p>
 
               <p className="mt-1 text-sm text-gray-800">
-                شماره تماس: {(receiverPhone)}
+                شماره تماس: {receiverPhone}
               </p>
             </div>
 
@@ -215,6 +204,7 @@ export default function CartCheckoutScreen() {
           <div className="mt-4 space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-gray-500">تعداد محصولات</span>
+
               <span className="font-bold text-gray-900">
                 {toPersianDigits(summary.totalQuantity)} عدد
               </span>
@@ -222,6 +212,7 @@ export default function CartCheckoutScreen() {
 
             <div className="flex items-center justify-between">
               <span className="text-gray-500">مبلغ قابل پرداخت</span>
+
               <span className="font-extrabold text-gray-900">
                 {formatPrice(summary.totalPrice)} تومان
               </span>
@@ -234,16 +225,13 @@ export default function CartCheckoutScreen() {
             type="button"
             onClick={handleSubmitOrder}
             disabled={
-              items.length === 0 ||
-              clearRemoteCart.isPending ||
-              !addressView.hasAddress
+              items.length === 0 || isSubmitting || !addressView.hasAddress
             }
             className="flex w-full max-w-sm items-center justify-center gap-2 rounded-md bg-green-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <ShoppingBag size={18} />
-            {clearRemoteCart.isPending
-              ? "در حال ثبت..."
-              : "ثبت سفارش و پرداخت"}
+
+            {isSubmitting ? "در حال ثبت..." : "ثبت سفارش و پرداخت"}
           </button>
         </div>
       </section>
