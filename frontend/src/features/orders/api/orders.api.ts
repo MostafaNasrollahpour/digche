@@ -27,13 +27,13 @@ function unwrapData<T>(response: T | ApiResponse<T> | CoreResult<T>): T {
 }
 
 export const ordersApi = {
-  async createOrder(payload?: CreateOrderPayload) {
+    async createOrder(payload?: CreateOrderPayload) {
     return apiRequest<unknown>(endpoints.orders.create, {
-      method: "POST",
-      auth: true,
-      ...(payload ? { body: payload } : {}),
+        method: "POST",
+        auth: true,
+        body: payload ?? {},
     });
-  },
+    },
 
   async getCustomerOrders(): Promise<ChefOrder[]> {
     const response = await apiRequest<unknown>(endpoints.orders.customer, {
