@@ -36,11 +36,13 @@ export default function FoodCard({
   const isScroll = display === "scroll";
   const isCompact = display === "compact";
 
+  const shouldShowChefInfo = variant === "customer";
+
   const foodDetailsHref = `/foods/${item.id}`;
 
   const cardClass = isScroll
     ? "w-[286px] min-w-[286px] max-w-[300px] snap-start sm:w-[300px] sm:min-w-[300px]"
-    : "w-full min-w-0"
+    : "w-full min-w-0";
 
   const imageClass = isCompact
     ? "relative aspect-square w-28 shrink-0 overflow-hidden sm:w-32"
@@ -107,10 +109,12 @@ export default function FoodCard({
               {toPersianDigits(item.remaining)}
             </p>
 
-            <p className="mt-1 flex items-center justify-end gap-1 text-xs text-gray-500">
-              <span className="truncate">{item.location}</span>
-              <MapPin size={13} className="shrink-0 text-orange-400" />
-            </p>
+            {shouldShowChefInfo && item.location && (
+              <p className="mt-1 flex items-center justify-end gap-1 text-xs text-gray-500">
+                <span className="truncate">{item.location}</span>
+                <MapPin size={13} className="shrink-0 text-orange-400" />
+              </p>
+            )}
           </div>
 
           <div
@@ -185,12 +189,17 @@ export default function FoodCard({
 
         <div className="mb-5 space-y-1 text-sm text-gray-600 sm:mb-6">
           <p className="truncate">{toPersianDigits(item.remaining)}</p>
-          <p className="truncate">{item.chef}</p>
 
-          <p className="flex items-center justify-end gap-1">
-            <span className="truncate">{item.location}</span>
-            <MapPin size={14} className="shrink-0 text-orange-400" />
-          </p>
+          {shouldShowChefInfo && item.chef && (
+            <p className="truncate">{item.chef}</p>
+          )}
+
+          {shouldShowChefInfo && item.location && (
+            <p className="flex items-center justify-end gap-1">
+              <span className="truncate">{item.location}</span>
+              <MapPin size={14} className="shrink-0 text-orange-400" />
+            </p>
+          )}
         </div>
 
         <div

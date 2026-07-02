@@ -16,16 +16,24 @@ export type Food = {
 
 export type FoodDto = {
   id: number | string;
-  title: string;
-  category: string;
-  rating?: number;
-  remaining: number | string;
-  chef: string;
-  chefId: number | string;
-  location: string;
-  price: number | string;
-  unit?: string;
-  image: string;
-  ingredients?: string;
-  description: string;
+  title?: string | null;
+  category?: string | null;
+  rating?: number | string | null;
+  remaining?: number | string | null;
+  chef?: string | null;
+  chefName?: string | null;
+  chefFullName?: string | null;
+  chefDisplayName?: string | null;
+  chefId?: number | string | null;
+  location?: string | null;
+  address?: string | null;
+  city?: string | null;
+  province?: string | null;
+  price?: number | string | null;
+  unit?: string | null;
+  image?: string | null;
+  imageUrl?: string | null;
+  photoUrl?: string | null;
+  ingredients?: string | string[] | null;
+  description?: string | null;
 };
