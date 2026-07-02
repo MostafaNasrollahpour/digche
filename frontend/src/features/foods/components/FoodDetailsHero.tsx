@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import FoodDetailsActions from "./FoodDetailsActions";
 import { formatPrice, toPersianDigits } from "@/shared/utils/persian-number";
+import { getProvinceCityFromAddress } from "@/shared/location/location-text";
 
 interface FoodDetailsHeroProps {
   food: {
@@ -73,7 +74,11 @@ function InfoPill({
     <div className="min-w-0 rounded-[1.2rem] bg-[#FFF9F4] px-3 py-2.5 sm:rounded-[1.4rem] sm:px-4 sm:py-3">
       <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3">
         <div className="min-w-0 flex-1 text-right">
-          {label && <p className="mb-0.5 text-[11px] text-gray-400 sm:text-xs">{label}</p>}
+          {label && (
+            <p className="mb-0.5 text-[11px] text-gray-400 sm:text-xs">
+              {label}
+            </p>
+          )}
 
           <p
             className={`truncate ${
@@ -133,6 +138,10 @@ export default function FoodDetailsHero({
 }: FoodDetailsHeroProps) {
   const router = useRouter();
 
+  const locationText = String(food.location ?? "").trim();
+  const { city: foodCity } = getProvinceCityFromAddress(locationText);
+  const foodCityLabel = foodCity || "نامشخص";
+
   const priceText = `${formatPrice(food.price)}${
     food.unit ? ` ${food.unit}` : ""
   }`;
@@ -188,7 +197,7 @@ export default function FoodDetailsHero({
               <InfoPill
                 icon={<MapPin size={21} className="text-orange-400" />}
                 label="شهر"
-                value={food.location}
+                value={foodCityLabel}
               />
 
               <InfoPill
@@ -237,24 +246,22 @@ export default function FoodDetailsHero({
       <div className="md:hidden">
         <div className="text-right">
           <div className="flex flex-row justify-between">
-                  <h1 className="break-words text-2xl font-extrabold leading-9 text-gray-950">
-                    {food.title}
-                  </h1>
-                
+            <h1 className="break-words text-2xl font-extrabold leading-9 text-gray-950">
+              {food.title}
+            </h1>
 
-              <div className="mt-3 flex items-center justify-start gap-3">
-                <span className="text-base font-bold text-gray-600">
-                  {toPersianDigits(food.rating)}
-                </span>
+            <div className="mt-3 flex items-center justify-start gap-3">
+              <span className="text-base font-bold text-gray-600">
+                {toPersianDigits(food.rating)}
+              </span>
 
-                <RatingStars rating={food.rating} />
-              </div>
-
+              <RatingStars rating={food.rating} />
+            </div>
           </div>
 
-              <p className="mt-0 text-sm leading-8 text-gray-600">
-                  {food.description}
-              </p>
+          <p className="mt-0 text-sm leading-8 text-gray-600">
+            {food.description}
+          </p>
 
           <IngredientsBox ingredients={food.ingredients} />
         </div>
@@ -284,7 +291,7 @@ export default function FoodDetailsHero({
             <InfoPill
               icon={<MapPin size={18} className="text-orange-400 sm:size-5" />}
               label="شهر"
-              value={food.location}
+              value={foodCityLabel}
             />
 
             <InfoPill
