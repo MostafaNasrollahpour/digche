@@ -96,30 +96,10 @@ public class Order
         return true;
     }
 
-    // ===== متد جدید برای تأیید توسط آشپز =====
-    public bool Approve()
-    {
-        if (Status != OrderStatus.Registered)
-            return false;
-
-        Status = OrderStatus.ChefApproved;
-        return true;
-    }
-
-    // ===== تغییر MarkAsPaid (فقط از ChefApproved مجاز است) =====
-    public bool MarkAsPaid()
-    {
-        if (Status != OrderStatus.ChefApproved)
-            return false;
-
-        Status = OrderStatus.Paid;
-        return true;
-    }
-
     // ===== تغییر StartPreparing (فقط از Paid مجاز است) =====
     public bool StartPreparing()
     {
-        if (Status != OrderStatus.Paid)
+        if (Status != OrderStatus.Registered)
             return false;
 
         Status = OrderStatus.Preparing;
@@ -150,12 +130,47 @@ public class Order
 
     public bool Cancel()
     {
-        if (Status != OrderStatus.Registered && Status != OrderStatus.Preparing && Status != OrderStatus.ChefApproved)
+        if (Status != OrderStatus.Registered && Status != OrderStatus.Preparing)
             return false;
 
         Status = OrderStatus.Cancelled;
         return true;
     }
+
+    public bool ChangeStatus(OrderStatus targetStatus, DateTime? estimatedDeliveryTime = null)
+    {
+        if (Status == targetStatus)
+            return true;
+
+        if (Status == OrderStatus.Cancelled || Status == OrderStatus.Delivered)
+            return false;
+
+        if (targetStatus == OrderStatus.Cancelled)
+            return Cancel();
+
+        if (targetStatus == OrderStatus.Registered)
+            return false;
+
+        if (GetWorkflowRank(targetStatus) <= GetWorkflowRank(Status))
+            return false;
+
+        return targetStatus switch
+        {
+            OrderStatus.Preparing => StartPreparing(),
+            OrderStatus.Shipped when estimatedDeliveryTime.HasValue => Ship(estimatedDeliveryTime.Value),
+            OrderStatus.Delivered => Deliver(),
+            _ => false
+        };
+    }
+
+    private static int GetWorkflowRank(OrderStatus status) => status switch
+    {
+        OrderStatus.Registered => 0,
+        OrderStatus.Preparing => 1,
+        OrderStatus.Shipped => 2,
+        OrderStatus.Delivered => 3,
+        _ => -1
+    };
 
     private void RecalculateTotal()
     {
