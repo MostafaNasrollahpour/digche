@@ -9,6 +9,7 @@ public class OrderDto
     public Guid ChefId { get; set; }
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerPhone { get; set; } = string.Empty;
+    public string ChefName {get; set; } = string.Empty;
     public OrderStatus Status { get; set; }
     public DateTime OrderedAt { get; set; }
     public List<OrderItemDto> Items { get; set; } = new();

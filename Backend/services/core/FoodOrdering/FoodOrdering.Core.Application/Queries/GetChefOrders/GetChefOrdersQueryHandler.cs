@@ -9,7 +9,7 @@ public class GetChefOrdersQueryHandler : IRequestHandler<GetChefOrdersQuery, Res
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IUserContext _userContext;
-    private readonly IUserServiceClient _userServiceClient; // برای دریافت اطلاعات مشتریان
+    private readonly IUserServiceClient _userServiceClient;
 
     public GetChefOrdersQueryHandler(
         IOrderRepository orderRepository,
@@ -23,41 +23,49 @@ public class GetChefOrdersQueryHandler : IRequestHandler<GetChefOrdersQuery, Res
 
     public async Task<Result<IEnumerable<OrderDto>>> Handle(GetChefOrdersQuery request, CancellationToken cancellationToken)
     {
-        // ۱. دریافت شناسه آشپز جاری
         if (!_userContext.TryGetCurrentUserId(out var chefId))
             return Result<IEnumerable<OrderDto>>.Failure("شناسه کاربر در توکن یافت نشد.");
 
-        // ۲. دریافت لیست سفارش‌های مربوط به این آشپز (همراه آیتم‌ها و غذاها)
+        // --- دریافت اطلاعات آشپز جاری (برای نام خودش) ---
+        AuthUserDto chefInfo = null;
+        try
+        {
+            chefInfo = await _userServiceClient.GetUserInfoAsync(chefId, cancellationToken);
+        }
+        catch { /* خطا نادیده گرفته می‌شود */ }
+
+        var chefName = chefInfo != null ? GetDisplayName(chefInfo) : "نامشخص";
+
+        // --- دریافت سفارش‌های مربوط به این آشپز ---
         var orders = await _orderRepository.GetByChefIdAsync(chefId, cancellationToken);
         if (orders is null || !orders.Any())
             return Result<IEnumerable<OrderDto>>.Success(Enumerable.Empty<OrderDto>());
 
-        // ۳. دریافت اطلاعات مشتریان (برای هر سفارش)
-        // برای جلوگیری از درخواست‌های تکراری، اطلاعات را در دیکشنری کش می‌کنیم
-        var customerInfoCache = new Dictionary<Guid, AuthUserDto>();
+        // --- کش اطلاعات مشتریان ---
+        var customerCache = new Dictionary<Guid, AuthUserDto>();
 
         foreach (var order in orders)
         {
-            if (!customerInfoCache.ContainsKey(order.CustomerId))
+            if (!customerCache.ContainsKey(order.CustomerId))
             {
                 try
                 {
                     var userInfo = await _userServiceClient.GetUserInfoAsync(order.CustomerId, cancellationToken);
-                    customerInfoCache[order.CustomerId] = userInfo;
+                    customerCache[order.CustomerId] = userInfo;
                 }
                 catch
                 {
-                    customerInfoCache[order.CustomerId] = null; // در صورت خطا، null ذخیره می‌شود
+                    customerCache[order.CustomerId] = null;
                 }
             }
         }
 
-        // ۴. نگاشت به DTO جدید
+        // --- نگاشت به DTO ---
         var orderDtos = orders.Select(order =>
         {
-            var userInfo = customerInfoCache.GetValueOrDefault(order.CustomerId);
-            var customerName = userInfo != null ? GetDisplayName(userInfo) : "نامشخص";
-            var customerPhone = userInfo?.Phone ?? "نامشخص";
+            var customerInfo = customerCache.GetValueOrDefault(order.CustomerId);
+            var customerName = customerInfo != null ? GetDisplayName(customerInfo) : "نامشخص";
+            var customerPhone = customerInfo?.Phone ?? "نامشخص";
 
             return new OrderDto
             {
@@ -66,6 +74,7 @@ public class GetChefOrdersQueryHandler : IRequestHandler<GetChefOrdersQuery, Res
                 ChefId = order.ChefId,
                 CustomerName = customerName,
                 CustomerPhone = customerPhone,
+                ChefName = chefName,          // ← مقداردهی با نام خود آشپز
                 Status = order.Status,
                 OrderedAt = order.CreatedAt,
                 Items = order.Items.Select(item => new OrderItemDto
