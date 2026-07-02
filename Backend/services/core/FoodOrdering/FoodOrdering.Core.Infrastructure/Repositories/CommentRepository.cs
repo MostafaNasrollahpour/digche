@@ -47,5 +47,17 @@ namespace FoodOrdering.Core.Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync(cancellation);
         }
+
+        public async Task<double?> GetAverageRatingByChefIdAsync(Guid chefId, CancellationToken cancellation = default)
+        {
+            var ratings = _context.Comments
+                .Where(c => c.Rating.HasValue && c.Dish != null && c.Dish.ChefId == chefId)
+                .Select(c => c.Rating!.Value);
+
+            if (!await ratings.AnyAsync(cancellation))
+                return null;
+
+            return await ratings.AverageAsync(cancellation);
+        }
     }
 }

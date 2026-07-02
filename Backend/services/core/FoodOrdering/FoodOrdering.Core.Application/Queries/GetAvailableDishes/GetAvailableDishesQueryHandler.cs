@@ -38,10 +38,12 @@ public class GetAvailableDishesQueryHandler : IRequestHandler<GetAvailableDishes
             // استخراج نام و شهر
             string? chefCity = null;
             string? chefName = null;
+            string? userName = null;
             if (userInfo != null)
             {
                 chefCity = userInfo.Address;
                 chefName = userInfo.DisplayName;
+                userName = userInfo.Username;
                 if (string.IsNullOrWhiteSpace(chefName))
                 {
                     chefName = $"{userInfo.FirstName} {userInfo.LastName}".Trim();
@@ -69,7 +71,8 @@ public class GetAvailableDishesQueryHandler : IRequestHandler<GetAvailableDishes
                 Category = d.Category,
                 Rating = avg,
                 Location = chefCity,
-                Chef = chefName
+                Chef = chefName,
+                UserName = userName
             };
         });
 

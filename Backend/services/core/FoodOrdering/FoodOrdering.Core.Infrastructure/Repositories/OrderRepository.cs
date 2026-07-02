@@ -2,6 +2,7 @@ using FoodOrdering.Core.Domain.Entities;
 using FoodOrdering.Core.Domain.Interfaces;
 using FoodOrdering.Core.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using FoodOrdering.Core.Domain.Enums;
 
 namespace FoodOrdering.Core.Infrastructure.Repositories;
 
@@ -37,9 +38,36 @@ public class OrderRepository : IOrderRepository
     public async Task AddAsync(Order order, CancellationToken cancellation = default)
         => await _context.Orders.AddAsync(order, cancellation);
 
-    public Task UpdateAsync(Order order, CancellationToken cancellation = default)
+    public async Task UpdateAsync(Order order, CancellationToken cancellation = default)
     {
         _context.Orders.Update(order);
-        return Task.CompletedTask;
+        await _context.SaveChangesAsync(cancellation);
     }
+
+    public async Task<int> CountByChefIdCreatedBetweenAsync(
+        Guid chefId,
+        DateTime startUtc,
+        DateTime endUtc,
+        CancellationToken cancellation = default)
+        => await _context.Orders
+            .CountAsync(o =>
+                o.ChefId == chefId &&
+                o.CreatedAt >= startUtc &&
+                o.CreatedAt < endUtc,
+                cancellation);
+
+    public async Task<decimal> SumNonCancelledTotalPriceByChefIdCreatedBetweenAsync(
+        Guid chefId,
+        DateTime startUtc,
+        DateTime endUtc,
+        CancellationToken cancellation = default)
+        => await _context.Orders
+            .Where(o =>
+                o.ChefId == chefId &&
+                o.CreatedAt >= startUtc &&
+                o.CreatedAt < endUtc &&
+                o.Status != OrderStatus.Cancelled)
+            .SumAsync(o => (decimal?)o.TotalPrice, cancellation) ?? 0;
+
+
 }

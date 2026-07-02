@@ -12,4 +12,5 @@ public interface IDishRepository
     Task UpdateAsync(Dish dish, CancellationToken cancellation = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellation = default);
     Task DeleteAsync(Dish dish, CancellationToken cancellation = default);
+    Task<int> CountActiveByChefIdAsync(Guid chefId, CancellationToken cancellation = default);
 }

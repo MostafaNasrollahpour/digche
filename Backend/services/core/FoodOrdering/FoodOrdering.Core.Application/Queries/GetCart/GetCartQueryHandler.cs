@@ -46,7 +46,8 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, Result<CartDto>
                 DishId = item.DishId,
                 DishName = item.Dish?.Name ?? "نامشخص",
                 Quantity = item.Quantity,
-                UnitPrice = item.Dish?.Price ?? 0
+                UnitPrice = item.Dish?.Price ?? 0,
+                ChefId = item.Dish?.ChefId ?? Guid.Empty,
             }).ToList()
         };
 

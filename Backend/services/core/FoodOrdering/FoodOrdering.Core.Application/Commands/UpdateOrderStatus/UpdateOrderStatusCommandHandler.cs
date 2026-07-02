@@ -37,10 +37,11 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             !Enum.IsDefined(typeof(OrderStatus), targetStatus))
             return Result<bool>.Failure("Invalid order status.");
 
-        if (targetStatus == OrderStatus.Shipped && !request.EstimatedDeliveryTime.HasValue)
-            return Result<bool>.Failure("Estimated delivery time is required when shipping an order.");
+        var estimatedDeliveryTime = request.EstimatedDeliveryTime;
+        if (targetStatus == OrderStatus.Shipped && !estimatedDeliveryTime.HasValue)
+            estimatedDeliveryTime = DateTime.UtcNow.AddMinutes(45);
 
-        if (!order.ChangeStatus(targetStatus, request.EstimatedDeliveryTime))
+        if (!order.ChangeStatus(targetStatus, estimatedDeliveryTime))
             return Result<bool>.Failure("Order status cannot be changed to the requested status.");
 
         await _orderRepository.UpdateAsync(order, cancellationToken);

@@ -59,4 +59,8 @@ public class DishRepository : IDishRepository
         }
     }
 
+    public async Task<int> CountActiveByChefIdAsync(Guid chefId, CancellationToken cancellation = default)
+        => await _context.Dishes
+            .CountAsync(d => d.ChefId == chefId && d.IsAvailable, cancellation);
+
 }
