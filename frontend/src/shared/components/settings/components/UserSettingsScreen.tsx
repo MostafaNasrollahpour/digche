@@ -89,7 +89,8 @@ function getSettingsFormFromUser(
     location: user?.location ?? "",
     bio: user?.bio ?? "",
     avatar: user?.avatar ?? defaultAvatar,
-    chefDisplayName: user?.username ?? user?.chefDisplayName ?? user?.name ?? "",  };
+    chefDisplayName: user?.username ?? user?.chefDisplayName ?? user?.name ?? "",
+  };
 }
 
 function getProvinceCityFromLocation(
@@ -136,7 +137,9 @@ export default function UserSettingsScreen({
   const [isSaved, setIsSaved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
+    null
+  );
   const [form, setForm] = useState<SettingsFormState>(() =>
     getSettingsFormFromUser(currentUser, defaultAvatar)
   );
@@ -486,7 +489,8 @@ export default function UserSettingsScreen({
   };
 
   const avatarSrc = form.avatar || defaultAvatar;
-  const isLocalAvatar = avatarSrc.startsWith("data:") || avatarSrc.startsWith("blob:");
+  const isLocalAvatar =
+    avatarSrc.startsWith("data:") || avatarSrc.startsWith("blob:");
 
   const avatarAlt =
     form.chefDisplayName || form.name || form.username || "تصویر پروفایل";
@@ -494,11 +498,11 @@ export default function UserSettingsScreen({
   const selectedProvinceCity = getProvinceCityFromLocation(form.location);
 
   return (
-    <section dir="rtl" className="relative h-full overflow-hidden">
-      <div className="h-full overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-5">
+    <section dir="rtl" className="relative h-full w-full max-w-full overflow-hidden">
+      <div className="h-full w-full max-w-full overflow-x-hidden overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-5">
         <div
           dir="ltr"
-          className="mb-3 flex flex-col lg:flex-row lg:items-start lg:justify-between"
+          className="mb-3 flex w-full flex-col lg:flex-row lg:items-start lg:justify-between"
         >
           <div className="order-2 text-right lg:order-1 lg:flex-1">
             <h1 dir="rtl" className="font-bold text-gray-950 sm:text-2xl">
@@ -507,9 +511,9 @@ export default function UserSettingsScreen({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mx-auto max-w-4xl">
-          <div className="mb-3 flex justify-start">
-            <div className="relative mx-auto">
+        <form onSubmit={handleSubmit} className="mx-auto w-full max-w-4xl">
+          <div className="mb-3 flex justify-center">
+            <div className="relative">
               <div className="relative mt-1 h-26 w-26 overflow-hidden rounded-full bg-[#F2CDB5]">
                 <Image
                   src={avatarSrc}
@@ -539,7 +543,7 @@ export default function UserSettingsScreen({
             </div>
           </div>
 
-          <div className="grid gap-x-20 gap-y-3 px-8 lg:grid-cols-2 lg:px-20">
+          <div className="mx-auto grid w-full min-w-0 max-w-3xl gap-x-8 gap-y-3 px-3 sm:px-6 lg:grid-cols-2">
             <ProfileField
               label="نام"
               name="name"
@@ -556,7 +560,7 @@ export default function UserSettingsScreen({
               placeholder="ایکس"
             />
 
-            <div className="block">
+            <div className="block min-w-0">
               <span className="mt-4 block text-right text-md font-bold text-gray-900">
                 شماره تلفن
               </span>
@@ -585,21 +589,21 @@ export default function UserSettingsScreen({
               placeholder="ایکس"
             />
 
-            <div className="lg:col-span-2">
+            <div className="min-w-0 lg:col-span-2">
               {role === "customer" ? (
-                <div className="block">
+                <div className="block min-w-0">
                   <span className="mt-4 block text-right text-md font-bold text-gray-900">
                     موقعیت مکانی
                   </span>
 
-                  <div className="mt-1 flex min-h-10 w-full items-center gap-3 rounded-xl bg-[#F2CDB5]/55 px-4 text-right text-sm text-gray-800">
-                    <span className="min-w-0 flex-1 truncate text-right">
+                  <div className="mt-1 flex min-h-10 w-full min-w-0 flex-col gap-2 rounded-xl bg-[#F2CDB5]/55 px-4 py-2 text-right text-sm text-gray-800 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-0">
+                    <span className="block min-w-0 max-w-full truncate text-right">
                       {form.location || "هنوز موقعیتی انتخاب نشده است"}
                     </span>
 
                     <Link
                       href="/customer/addresses"
-                      className="shrink-0 rounded-full bg-[#EFC5A8] px-4 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-[#e9b892]"
+                      className="inline-flex w-fit shrink-0 self-end whitespace-nowrap rounded-full bg-[#EFC5A8] px-4 py-1.5 text-xs font-bold text-gray-900 transition hover:bg-[#e9b892] sm:self-auto"
                     >
                       مدیریت آدرس
                     </Link>
@@ -611,7 +615,7 @@ export default function UserSettingsScreen({
                   </p>
                 </div>
               ) : (
-                <div className="block">
+                <div className="block min-w-0">
                   <span className="mt-4 block text-right text-md font-bold text-gray-900">
                     موقعیت مکانی
                   </span>
@@ -648,6 +652,7 @@ export default function UserSettingsScreen({
               {successMessage}
             </p>
           )}
+
           {errorMessage && (
             <p className="mt-3 text-center text-sm font-bold text-red-500">
               {errorMessage}
