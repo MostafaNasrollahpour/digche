@@ -1,6 +1,46 @@
 import type { ChefOrder, OrderStatus } from "@/store/order-store";
 
-type AnyOrderDto = Record<string, any>;
+type OrderRefDto = {
+  id?: string | number;
+  name?: string;
+  fullName?: string;
+  phone?: string;
+  imageUrl?: string;
+};
+
+type OrderDto = {
+  id?: string | number;
+  orderItemId?: string | number;
+  chefId?: string | number;
+  chefName?: string;
+  customerId?: number;
+  customerName?: string;
+  customerFullName?: string;
+  customerPhone?: string;
+  foodId?: string | number;
+  dishId?: string | number;
+  foodTitle?: string;
+  dishName?: string;
+  title?: string;
+  foodImage?: string;
+  dishImage?: string;
+  imageUrl?: string;
+  quantity?: number | string;
+  price?: number | string;
+  unitPrice?: number | string;
+  totalPrice?: number | string;
+  unit?: string;
+  status?: unknown;
+  orderedAt?: string;
+  createdAt?: string;
+  orderDate?: string;
+  date?: string;
+  chef?: OrderRefDto;
+  customer?: OrderRefDto;
+  dish?: OrderRefDto;
+  items?: unknown;
+  orderItems?: unknown;
+};
 
 const fallbackImage = "/images/cake.webp";
 
@@ -38,14 +78,24 @@ function resolveImageSrc(src?: string) {
   return `/images/${value}`;
 }
 
-function mapOneOrder(dto: AnyOrderDto, item?: AnyOrderDto, index = 0): ChefOrder {
+function toOrderId(value: string | number | undefined, fallback: number): number {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : fallback;
+}
+
+function toOptionalNumber(value: string | number | undefined): number | undefined {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : undefined;
+}
+
+function mapOneOrder(dto: OrderDto, item?: OrderDto, index = 0): ChefOrder {
   const source = item ?? dto;
 
   return {
-    id: source.id ?? source.orderItemId ?? `${dto.id}-${index}`,
+    id: toOrderId(source.id ?? source.orderItemId, Date.now() + index),
     chefId: dto.chefId ?? source.chefId ?? dto.chef?.id ?? "",
     chefName: dto.chefName ?? dto.chef?.name ?? dto.chef?.fullName ?? "",
-    customerId: dto.customerId ?? dto.customer?.id ?? "",
+    customerId: toOptionalNumber(dto.customerId ?? dto.customer?.id),
     customerName:
       dto.customerName ??
       dto.customerFullName ??
@@ -81,11 +131,11 @@ function mapOneOrder(dto: AnyOrderDto, item?: AnyOrderDto, index = 0): ChefOrder
 
 export function mapOrderDtosToChefOrders(dtos: unknown[]): ChefOrder[] {
   return dtos.flatMap((dto) => {
-    const order = dto as AnyOrderDto;
+    const order = dto as OrderDto;
     const items = order.items ?? order.orderItems;
 
     if (Array.isArray(items) && items.length > 0) {
-      return items.map((item, index) => mapOneOrder(order, item, index));
+      return items.map((item, index) => mapOneOrder(order, item as OrderDto, index));
     }
 
     return [mapOneOrder(order)];
