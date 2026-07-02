@@ -1,5 +1,3 @@
-// src/features/chef/orders/hooks/use-chef-orders.ts
-
 "use client";
 
 import { useQuery } from "@tanstack/react-query";

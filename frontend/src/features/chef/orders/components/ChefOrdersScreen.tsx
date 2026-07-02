@@ -1,5 +1,3 @@
-// src/features/chef/orders/components/ChefOrdersScreen.tsx
-
 "use client";
 
 import { useMemo, useState } from "react";
