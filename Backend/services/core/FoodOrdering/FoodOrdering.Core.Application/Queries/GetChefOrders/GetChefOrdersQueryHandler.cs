@@ -77,12 +77,19 @@ public class GetChefOrdersQueryHandler : IRequestHandler<GetChefOrdersQuery, Res
                 ChefName = chefName,          // ← مقداردهی با نام خود آشپز
                 Status = order.Status,
                 OrderedAt = order.CreatedAt,
+                DeliveryFee = order.DeliveryFee,
+                EstimatedDeliveryTime = order.EstimatedDeliveryTime,
+                TotalPrice = order.TotalPrice,
+                CreatedAt = order.CreatedAt,
                 Items = order.Items.Select(item => new OrderItemDto
                 {
                     FoodId = item.DishId,
                     FoodTitle = item.Dish?.Name ?? "نامشخص",
                     FoodImage = item.Dish?.ImageUrl ?? string.Empty,
                     Quantity = item.Quantity,
+                    DishId = item.DishId,
+                    DishName = item.Dish?.Name ?? "نامشخص",
+                    UnitPrice = item.UnitPrice,
                     Price = item.UnitPrice,
                     Unit = "تومان"
                 }).ToList()

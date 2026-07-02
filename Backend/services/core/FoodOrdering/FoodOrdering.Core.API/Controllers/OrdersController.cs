@@ -30,7 +30,8 @@ public class OrdersController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { message = result.ErrorMessage });
 
-        return CreatedAtAction(nameof(GetOrder), new { id = result.Data }, result.Data);
+        var order = result.Data!;
+        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
     }
 
     [HttpGet("{id:guid}")]

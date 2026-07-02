@@ -80,6 +80,10 @@ public class GetCustomerOrdersQueryHandler : IRequestHandler<GetCustomerOrdersQu
                 ChefName = chefName,          // ← مقداردهی شد
                 Status = order.Status,
                 OrderedAt = order.CreatedAt,
+                DeliveryFee = order.DeliveryFee,
+                EstimatedDeliveryTime = order.EstimatedDeliveryTime,
+                TotalPrice = order.TotalPrice,
+                CreatedAt = order.CreatedAt,
                 Items = order.Items.Select(item => new OrderItemDto
                 {
                     FoodId = item.DishId,
@@ -87,6 +91,9 @@ public class GetCustomerOrdersQueryHandler : IRequestHandler<GetCustomerOrdersQu
                     FoodImage = item.Dish?.ImageUrl ?? string.Empty,
                     Quantity = item.Quantity,
                     Price = item.UnitPrice,
+                    DishId = item.DishId,
+                    DishName = item.Dish?.Name ?? "نامشخص",
+                    UnitPrice = item.UnitPrice,
                     Unit = "تومان"
                 }).ToList()
             };

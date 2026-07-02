@@ -19,12 +19,17 @@ public class OrderRepository : IOrderRepository
 
     public async Task<IEnumerable<Order>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellation = default)
         => await _context.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Dish)
             .Where(o => o.CustomerId == customerId)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(cancellation);
 
+    
     public async Task<IEnumerable<Order>> GetByChefIdAsync(Guid chefId, CancellationToken cancellation = default)
         => await _context.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Dish)
             .Where(o => o.ChefId == chefId)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(cancellation);
