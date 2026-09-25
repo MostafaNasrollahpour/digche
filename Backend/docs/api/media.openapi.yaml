@@ -8,7 +8,7 @@ info:
     If Swagger does not add the Bearer prefix automatically, paste it as: Bearer <accessToken>.
 
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:8081
     description: Local Gateway
 
 tags:

@@ -1,8 +1,8 @@
-# Chat Service
+# Auth Service
 
 Canonical documentation:
 
-- [Chat Service](../../../docs/services/chat.md)
+- [Auth Service](../../../docs/services/auth.md)
 - [Architecture Overview](../../../docs/architecture/overview.md)
 - [Environment Variables](../../../docs/development/environment.md)
 

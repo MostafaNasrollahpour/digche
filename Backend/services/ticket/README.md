@@ -1,25 +1,13 @@
 # Ticket Service
 
-Simple support ticket service for public users and admins.
+Canonical documentation:
 
-## Endpoints
+- [Ticket Service](../../../docs/services/ticket.md)
+- [Architecture Overview](../../../docs/architecture/overview.md)
+- [Environment Variables](../../../docs/development/environment.md)
 
-```txt
-GET   /tickets/health
-POST  /tickets
-GET   /tickets/me
-GET   /tickets
-GET   /tickets/{ticketId}
-PATCH /tickets/{ticketId}/review
-POST  /tickets/{ticketId}/reply
-```
+OpenAPI definitions for this service are maintained under:
 
-Public users with `client` or `chef` selected role can create tickets.
-Public users can list only their own tickets with `GET /tickets/me`.
-Admins and managers can list, view, mark tickets as reviewed, and add a text reply.
-
-Swagger UI is available at:
-
-```txt
-http://localhost:8080/tickets/docs
+```text
+Backend/docs/api/
 ```

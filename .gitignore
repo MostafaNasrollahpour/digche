@@ -1,0 +1,16 @@
+.DS_Store
+**/.DS_Store
+
+.env
+.env.local
+
+node_modules/
+.next/
+
+bin/
+obj/
+
+.idea/
+.vscode/
+
+*.log

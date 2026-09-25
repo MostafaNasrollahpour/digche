@@ -5,7 +5,7 @@ info:
   description: Simple support ticket service for public users, chefs, admins, and managers.
 
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:8081
     description: Local Gateway
 
 tags:
